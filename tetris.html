@@ -39,11 +39,14 @@
             color: #9ca3af;
             letter-spacing: 0.08em;
         }
+        .settings-panel input[type="range"] {
+            width: 100%;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-3 sm:p-4">
     <div class="w-full max-w-4xl flex flex-col items-center gap-3">
-        <div class="w-full max-w-[540px] grid grid-cols-4 gap-2 sm:gap-3">
+        <div class="w-full max-w-[680px] grid grid-cols-5 gap-2 sm:gap-3">
             <div class="hud-card p-2 sm:p-3 flex flex-col items-center justify-center">
                 <div class="mini-label mb-1">HOLD</div>
                 <canvas id="holdCanvas" width="72" height="72" class="bg-gray-950 rounded-lg border border-gray-800 cursor-pointer pressable"></canvas>
@@ -58,13 +61,75 @@
                 <div id="levelDisplay" class="small-arcade text-sm sm:text-base text-cyan-400">1</div>
             </div>
             <div class="hud-card p-2 sm:p-3 flex flex-col items-center justify-center">
+                <div class="mini-label mb-1">HIGH</div>
+                <div id="highScoreDisplay" class="small-arcade text-sm sm:text-base text-yellow-300 text-center break-all">0</div>
+            </div>
+            <div class="hud-card p-2 sm:p-3 flex flex-col items-center justify-center">
                 <div class="mini-label mb-1">NEXT</div>
                 <canvas id="nextCanvas" width="72" height="72" class="bg-gray-950 rounded-lg border border-gray-800"></canvas>
             </div>
         </div>
 
+        <div class="w-full max-w-[680px] grid grid-cols-2 gap-2">
+            <button id="btnPause" class="hud-card py-2 px-3 text-xs sm:text-sm small-arcade text-gray-200 hover:bg-gray-800/70 transition-colors">PAUSE</button>
+            <button id="btnSettings" class="hud-card py-2 px-3 text-xs sm:text-sm small-arcade text-gray-200 hover:bg-gray-800/70 transition-colors">SETTINGS</button>
+        </div>
+
+        <div class="w-full max-w-[680px] grid grid-cols-2 gap-2">
+            <div class="hud-card px-3 py-2">
+                <div class="flex items-center justify-between gap-3">
+                    <div>
+                        <div class="mini-label mb-1">DANGER</div>
+                        <div id="dangerDisplay" class="small-arcade text-xs text-red-300">0 / 2</div>
+                    </div>
+                    <div id="dangerStageDisplay" class="small-arcade text-[10px] text-red-400">STAGE 0</div>
+                </div>
+                <div class="mt-2 h-2 rounded-full bg-red-950/70 overflow-hidden border border-red-900/70">
+                    <div id="dangerBar" class="h-full bg-gradient-to-r from-red-500 to-orange-400" style="width:0%"></div>
+                </div>
+            </div>
+            <div class="hud-card px-3 py-2">
+                <div class="flex items-center justify-between gap-3">
+                    <div>
+                        <div class="mini-label mb-1">FEVER</div>
+                        <div id="feverDisplay" class="small-arcade text-xs text-fuchsia-300">READY</div>
+                    </div>
+                    <div id="feverComboDisplay" class="small-arcade text-[10px] text-fuchsia-400">CHAIN 0/2</div>
+                </div>
+                <div class="mt-2 h-2 rounded-full bg-fuchsia-950/70 overflow-hidden border border-fuchsia-900/70">
+                    <div id="feverBar" class="h-full bg-gradient-to-r from-fuchsia-500 to-cyan-400" style="width:0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="w-full max-w-[680px] grid grid-cols-2 sm:grid-cols-4 gap-2" id="debugHud">
+            <div class="hud-card px-3 py-2">
+                <div class="mini-label mb-1">BOMB%</div>
+                <div id="debugBombChance" class="small-arcade text-[11px] text-orange-300">0%</div>
+            </div>
+            <div class="hud-card px-3 py-2">
+                <div class="mini-label mb-1">FUSE</div>
+                <div id="debugFuseMode" class="small-arcade text-[11px] text-red-300">10.0s</div>
+            </div>
+            <div class="hud-card px-3 py-2">
+                <div class="mini-label mb-1">GARBAGE</div>
+                <div id="debugGarbageStock" class="small-arcade text-[11px] text-amber-300">0</div>
+            </div>
+            <div class="hud-card px-3 py-2">
+                <div class="mini-label mb-1">SPD PENALTY</div>
+                <div id="debugSpeedPenalty" class="small-arcade text-[11px] text-cyan-300">0ms</div>
+            </div>
+        </div>
+
         <div class="relative w-full flex justify-center">
             <canvas id="gameCanvas" width="300" height="600" class="canvas-container bg-gray-950 border-2 border-gray-800 rounded-xl block"></canvas>
+            <div class="absolute inset-x-0 top-3 z-20 flex flex-col items-center pointer-events-none gap-3">
+                <div id="eventBanner" class="hidden small-arcade text-[11px] px-3 py-2 rounded-full border bg-black/70 text-white"></div>
+                <div id="megaBonusOverlay" class="hidden flex flex-col items-center text-center">
+                    <div class="font-arcade text-xl sm:text-2xl text-yellow-300 drop-shadow-[0_0_16px_rgba(250,204,21,0.9)]">MEGA DISARM</div>
+                    <div id="megaBonusScore" class="small-arcade mt-2 text-sm sm:text-base text-orange-200 drop-shadow-[0_0_12px_rgba(251,146,60,0.85)]">+0 BONUS</div>
+                </div>
+            </div>
 
             <div id="startOverlay" class="absolute inset-0 bg-black/80 flex flex-col items-center justify-center rounded-xl z-10">
                 <h2 class="text-2xl font-arcade text-white mb-4 text-center leading-loose">READY TO<br>EXPLODE?</h2>
@@ -75,11 +140,90 @@
                 <button id="btnStart" class="bg-red-600 hover:bg-red-500 text-white font-arcade py-3 px-6 rounded-xl shadow-[0_0_15px_rgba(255,0,0,0.4)] transition-all">START</button>
             </div>
 
-            <div id="gameOverOverlay" class="absolute inset-0 bg-black/80 flex flex-col items-center justify-center rounded-xl z-10 hidden">
+            <div id="gameOverOverlay" class="absolute inset-0 bg-black/80 flex flex-col items-center justify-center rounded-xl z-20 hidden">
                 <h2 class="text-3xl font-arcade text-red-500 mb-2">GAME OVER</h2>
                 <p class="text-gray-300 mb-2 font-mono">FINAL SCORE: <span id="finalScore" class="text-yellow-400 font-bold text-xl">0</span></p>
+                <p class="text-gray-300 mb-2 font-mono">HIGH SCORE: <span id="finalHighScore" class="text-yellow-300 font-bold text-xl">0</span></p>
                 <p id="gameOverReason" class="text-[11px] sm:text-xs text-red-200/90 bg-red-950/40 border border-red-800 rounded-lg px-3 py-2 mb-6 max-w-[240px] text-center leading-relaxed">TOP OUT</p>
                 <button id="btnRestart" class="bg-blue-600 hover:bg-blue-500 text-white font-arcade py-3 px-6 rounded-xl shadow-[0_0_15px_rgba(0,100,255,0.4)] transition-all">RETRY</button>
+            </div>
+
+            <div id="pauseOverlay" class="absolute inset-0 bg-black/70 flex flex-col items-center justify-center rounded-xl z-10 hidden">
+                <h2 class="text-3xl font-arcade text-cyan-300 mb-4">PAUSED</h2>
+                <p class="text-xs text-gray-300 mb-5 text-center px-6 leading-relaxed">P キー / Esc / PAUSE ボタンで再開</p>
+                <button id="btnResume" class="bg-cyan-700 hover:bg-cyan-600 text-white font-arcade py-3 px-6 rounded-xl shadow-[0_0_15px_rgba(0,180,255,0.35)] transition-all">RESUME</button>
+            </div>
+        </div>
+
+        <div id="settingsModal" class="fixed inset-0 bg-black/70 z-30 hidden items-center justify-center p-4">
+            <div class="settings-panel w-full max-w-md hud-card p-4 sm:p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-arcade text-base text-white">SETTINGS</h3>
+                    <button id="btnCloseSettings" class="small-arcade text-xs text-gray-300 hover:text-white">CLOSE</button>
+                </div>
+                <div class="space-y-4 text-sm text-gray-200">
+                    <label class="block">
+                        <div class="mini-label mb-2">SE VOLUME</div>
+                        <input id="settingSeVolume" type="range" min="0" max="100" step="1" />
+                        <div id="settingSeVolumeValue" class="mt-1 text-xs text-gray-400">100%</div>
+                    </label>
+                    <label class="block">
+                        <div class="mini-label mb-2">BGM VOLUME</div>
+                        <input id="settingBgmVolume" type="range" min="0" max="100" step="1" />
+                        <div id="settingBgmVolumeValue" class="mt-1 text-xs text-gray-400">40%</div>
+                    </label>
+                    <label class="flex items-center justify-between gap-4">
+                        <div>
+                            <div class="mini-label mb-1">BGM</div>
+                            <div class="text-xs text-gray-400">ゲーム中の8bit風BGM</div>
+                        </div>
+                        <input id="settingBgmEnabled" type="checkbox" class="h-5 w-5" />
+                    </label>
+                    <label class="block">
+                        <div class="mini-label mb-2">DIFFICULTY</div>
+                        <select id="settingDifficulty" class="w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-100">
+                            <option value="easy">EASY</option>
+                            <option value="normal">NORMAL</option>
+                            <option value="hard">HARD</option>
+                            <option value="chaos">CHAOS</option>
+                        </select>
+                        <div id="settingDifficultyValue" class="mt-1 text-xs text-gray-400">標準バランス</div>
+                    </label>
+                    <label class="block">
+                        <div class="mini-label mb-2">LOCK DELAY</div>
+                        <input id="settingLockDelay" type="range" min="200" max="900" step="10" />
+                        <div id="settingLockDelayValue" class="mt-1 text-xs text-gray-400">450ms</div>
+                    </label>
+                    <label class="block">
+                        <div class="mini-label mb-2">SWIPE SENSITIVITY</div>
+                        <input id="settingSwipeSensitivity" type="range" min="14" max="40" step="1" />
+                        <div id="settingSwipeSensitivityValue" class="mt-1 text-xs text-gray-400">24px</div>
+                    </label>
+                    <label class="flex items-center justify-between gap-4">
+                        <div>
+                            <div class="mini-label mb-1">SHOW DANGER ZONE</div>
+                            <div class="text-xs text-gray-400">上部の危険エリアを表示</div>
+                        </div>
+                        <input id="settingShowDangerZone" type="checkbox" class="h-5 w-5" />
+                    </label>
+                    <div class="pt-2 border-t border-gray-800">
+                        <div class="mini-label mb-2">KEY CONFIG</div>
+                        <div class="grid grid-cols-2 gap-2 text-xs">
+                            <button data-keybind-action="left" class="keybind-btn hud-card px-3 py-2 text-left">LEFT: <span>←</span></button>
+                            <button data-keybind-action="right" class="keybind-btn hud-card px-3 py-2 text-left">RIGHT: <span>→</span></button>
+                            <button data-keybind-action="down" class="keybind-btn hud-card px-3 py-2 text-left">DOWN: <span>↓</span></button>
+                            <button data-keybind-action="rotate" class="keybind-btn hud-card px-3 py-2 text-left">ROTATE: <span>↑</span></button>
+                            <button data-keybind-action="drop" class="keybind-btn hud-card px-3 py-2 text-left">DROP: <span>SPACE</span></button>
+                            <button data-keybind-action="hold" class="keybind-btn hud-card px-3 py-2 text-left">HOLD: <span>SHIFT</span></button>
+                            <button data-keybind-action="pause" class="keybind-btn hud-card px-3 py-2 text-left">PAUSE: <span>P</span></button>
+                            <button data-keybind-action="settings" class="keybind-btn hud-card px-3 py-2 text-left">SETTINGS: <span>O</span></button>
+                        </div>
+                        <div class="mt-2 flex justify-between items-center gap-3">
+                            <div id="keybindHint" class="text-[11px] text-gray-400">ボタンを押して次のキーを割り当て</div>
+                            <button id="btnResetKeybinds" class="small-arcade text-xs text-cyan-300 hover:text-cyan-200">RESET</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -107,17 +251,52 @@
         const COLS = 10;
         const ROWS = 20;
         const BLOCK_SIZE = 30;
-        const LOCK_DELAY = 450;
+        const DEFAULT_LOCK_DELAY = 450;
         const GARBAGE_FALL_INTERVAL = 45;
-        const BASE_DROP_INTERVAL = 950;
-        const MIN_DROP_INTERVAL = 110;
-        const LEVEL_LINE_STEP = 10;
-        const BASE_BOMB_CHANCE = 0.14;
-        const MAX_BOMB_CHANCE = 0.60;
-        const BASE_GARBAGE_COUNT = 2;
-        const BOMB_TIME_MS = 10000;
-        const PARTICLE_MAX_AGE = 260;
-        const PARTICLE_CLEAR_MARGIN = 80;
+        const PARTICLE_MAX_AGE = 170;
+        const PARTICLE_CLEAR_MARGIN = 40;
+
+        const BALANCE = Object.freeze({
+            speed: Object.freeze({
+                baseDropInterval: 950,
+                minDropInterval: 140,
+                levelStepLines: 10,
+                levelDropStep: 75,
+                explosionStepMs: 1,
+                maxExplosionPenaltyMs: 360
+            }),
+            bomb: Object.freeze({
+                timeMs: 10000,
+                baseChance: 0.20,
+                maxChance: 0.85,
+                levelChanceStep: 0.05,
+                explosionChanceStep: 0.10,
+                shortFuseChanceThreshold: 0.50,
+                shortFuseTimeMs: 5000,
+                feverChanceReduction: 0.08
+            }),
+            danger: Object.freeze({
+                threshold: 2,
+                bombChanceStep: 0.05,
+                baseGarbageCount: 2,
+                delayStockMultiplier: 1.5
+            }),
+            reward: Object.freeze({
+                justDisarmWindowMs: 1200,
+                justDisarmScore: 900,
+                feverRequirement: 2,
+                feverDurationMs: 12000,
+                feverScoreMultiplier: 2.0,
+                feverGarbageRelief: 2,
+                feverJustDisarmExtendMs: 1500,
+                megaClearBonusScore: 5000,
+                megaSlowDurationMs: 260,
+                megaSlowScale: 0.5
+            }),
+            debug: Object.freeze({
+                enabled: true
+            })
+        });
 
         const PHASES = Object.freeze({
             READY: 'ready',
@@ -162,7 +341,7 @@
         let lastTime = 0;
         let dropTimer = 0;
         let lockTimer = 0;
-        let dropInterval = BASE_DROP_INTERVAL;
+        let dropInterval = BALANCE.speed.baseDropInterval;
 
         let nextPieceKey = null;
         let nextPieceBomb = false;
@@ -175,21 +354,105 @@
         let shakeTimer = 0;
         let boardBlockIdCounter = 1;
         let lastGameOverReason = '';
+        let dangerCount = 0;
+        let totalExplodedBombs = 0;
+        let feverTimer = 0;
+        let justDisarmChain = 0;
+        let shortFuseModeAnnounced = false;
+        let pendingJustDisarms = 0;
+        let pendingBestJustDisarmTime = Infinity;
+        let pendingMegaClear = false;
+        let megaSlowTimer = 0;
+        let megaBonusTimer = 0;
+        let eventBannerTimer = 0;
+        let eventBannerClass = 'border-white/30 bg-black/70 text-white';
 
         const scoreDisplay = document.getElementById('scoreDisplay');
         const levelDisplay = document.getElementById('levelDisplay');
         const finalScore = document.getElementById('finalScore');
+        const finalHighScore = document.getElementById('finalHighScore');
         const gameOverReasonDisplay = document.getElementById('gameOverReason');
         const startOverlay = document.getElementById('startOverlay');
         const gameOverOverlay = document.getElementById('gameOverOverlay');
+        const pauseOverlay = document.getElementById('pauseOverlay');
         const holdCanvas = document.getElementById('holdCanvas');
         const holdCtx = holdCanvas.getContext('2d');
         const holdStatus = document.getElementById('holdStatus');
         const nextCanvas = document.getElementById('nextCanvas');
         const nextCtx = nextCanvas.getContext('2d');
+        const highScoreDisplay = document.getElementById('highScoreDisplay');
+        const dangerDisplay = document.getElementById('dangerDisplay');
+        const dangerStageDisplay = document.getElementById('dangerStageDisplay');
+        const dangerBar = document.getElementById('dangerBar');
+        const feverDisplay = document.getElementById('feverDisplay');
+        const feverComboDisplay = document.getElementById('feverComboDisplay');
+        const feverBar = document.getElementById('feverBar');
+        const debugHud = document.getElementById('debugHud');
+        const debugBombChance = document.getElementById('debugBombChance');
+        const debugFuseMode = document.getElementById('debugFuseMode');
+        const debugGarbageStock = document.getElementById('debugGarbageStock');
+        const debugSpeedPenalty = document.getElementById('debugSpeedPenalty');
+        const eventBanner = document.getElementById('eventBanner');
+        const megaBonusOverlay = document.getElementById('megaBonusOverlay');
+        const megaBonusScore = document.getElementById('megaBonusScore');
+        const settingsModal = document.getElementById('settingsModal');
+        const settingSeVolume = document.getElementById('settingSeVolume');
+        const settingSeVolumeValue = document.getElementById('settingSeVolumeValue');
+        const settingBgmVolume = document.getElementById('settingBgmVolume');
+        const settingBgmVolumeValue = document.getElementById('settingBgmVolumeValue');
+        const settingBgmEnabled = document.getElementById('settingBgmEnabled');
+        const settingDifficulty = document.getElementById('settingDifficulty');
+        const settingDifficultyValue = document.getElementById('settingDifficultyValue');
+        const settingLockDelay = document.getElementById('settingLockDelay');
+        const settingLockDelayValue = document.getElementById('settingLockDelayValue');
+        const settingSwipeSensitivity = document.getElementById('settingSwipeSensitivity');
+        const settingSwipeSensitivityValue = document.getElementById('settingSwipeSensitivityValue');
+        const settingShowDangerZone = document.getElementById('settingShowDangerZone');
+        const keybindButtons = Array.from(document.querySelectorAll('.keybind-btn'));
+        const keybindHint = document.getElementById('keybindHint');
+        const btnResetKeybinds = document.getElementById('btnResetKeybinds');
 
+        const STORAGE_KEYS = Object.freeze({
+            HIGH_SCORE: 'explosion_tetris_high_score',
+            SETTINGS: 'explosion_tetris_settings_v2'
+        });
+
+        const DIFFICULTY_PRESETS = Object.freeze({
+            easy: { label: 'やさしめ。落下は遅く、爆弾も少なめ', bombChanceOffset: -0.06, dropOffset: 140, garbageBonus: -1, scoreMul: 0.9 },
+            normal: { label: '標準バランス', bombChanceOffset: 0, dropOffset: 0, garbageBonus: 0, scoreMul: 1.0 },
+            hard: { label: '速めで爆弾多め', bombChanceOffset: 0.07, dropOffset: -110, garbageBonus: 1, scoreMul: 1.2 },
+            chaos: { label: 'かなり危険。上級者向け', bombChanceOffset: 0.14, dropOffset: -190, garbageBonus: 2, scoreMul: 1.45 }
+        });
+
+        const DEFAULT_KEYBINDS = Object.freeze({
+            left: 'ArrowLeft',
+            right: 'ArrowRight',
+            down: 'ArrowDown',
+            rotate: 'ArrowUp',
+            drop: 'Space',
+            hold: 'ShiftLeft',
+            pause: 'KeyP',
+            settings: 'KeyO'
+        });
+
+        const settings = {
+            seVolume: 0.75,
+            bgmVolume: 0.4,
+            bgmEnabled: true,
+            difficulty: 'normal',
+            lockDelay: DEFAULT_LOCK_DELAY,
+            swipeSensitivity: 24,
+            showDangerZone: true,
+            keybinds: { ...DEFAULT_KEYBINDS }
+        };
+
+        let highScore = 0;
+        let isPaused = false;
         let audioCtx = null;
         let audioUnlocked = false;
+        let bgmIntervalId = null;
+        let bgmStep = 0;
+        let waitingForKeybindAction = null;
 
         function ensureAudio() {
             if (!audioCtx) {
@@ -201,21 +464,76 @@
             audioUnlocked = true;
         }
 
-        function playTone({ type = 'square', frequency = 440, duration = 0.06, volume = 0.03, slideTo = null, startAt = 0 }) {
+        function playTone({ type = 'square', frequency = 440, duration = 0.06, volume = 0.03, slideTo = null, startAt = 0, channel = 'se' }) {
             if (!audioUnlocked || !audioCtx) return;
             const now = audioCtx.currentTime + startAt;
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
+            const volumeScale = channel === 'bgm' ? settings.bgmVolume : settings.seVolume;
             osc.type = type;
             osc.frequency.setValueAtTime(frequency, now);
             if (slideTo !== null) osc.frequency.linearRampToValueAtTime(slideTo, now + duration);
             gain.gain.setValueAtTime(0.0001, now);
-            gain.gain.exponentialRampToValueAtTime(volume, now + 0.01);
+            gain.gain.exponentialRampToValueAtTime(Math.max(0.0001, volume * volumeScale), now + Math.min(0.01, duration / 3));
             gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
             osc.connect(gain);
             gain.connect(audioCtx.destination);
             osc.start(now);
             osc.stop(now + duration + 0.02);
+        }
+
+        const bgmPatterns = [
+            [{ f: 262, d: 0.18, v: 0.018 }, { f: 392, d: 0.14, v: 0.014 }],
+            [{ f: 330, d: 0.18, v: 0.018 }],
+            [{ f: 392, d: 0.18, v: 0.018 }, { f: 523, d: 0.12, v: 0.012 }],
+            [{ f: 330, d: 0.18, v: 0.016 }],
+            [{ f: 294, d: 0.18, v: 0.018 }, { f: 440, d: 0.12, v: 0.012 }],
+            [{ f: 349, d: 0.18, v: 0.018 }],
+            [{ f: 392, d: 0.24, v: 0.02 }, { f: 196, d: 0.22, v: 0.009 }],
+            []
+        ];
+        const feverBgmPatterns = [
+            [{ f: 523, d: 0.15, v: 0.022 }, { f: 784, d: 0.12, v: 0.014 }],
+            [{ f: 659, d: 0.15, v: 0.022 }, { f: 988, d: 0.10, v: 0.012 }],
+            [{ f: 784, d: 0.15, v: 0.023 }, { f: 1175, d: 0.10, v: 0.012 }],
+            [{ f: 659, d: 0.15, v: 0.020 }],
+            [{ f: 587, d: 0.15, v: 0.021 }, { f: 880, d: 0.10, v: 0.012 }],
+            [{ f: 784, d: 0.18, v: 0.024 }, { f: 392, d: 0.18, v: 0.010 }],
+            [],
+            [{ f: 988, d: 0.15, v: 0.022 }]
+        ];
+
+        function playBgmStep() {
+            if (!audioUnlocked || !audioCtx || !settings.bgmEnabled || settings.bgmVolume <= 0) return;
+            const activePatterns = feverTimer > 0 ? feverBgmPatterns : bgmPatterns;
+            const step = activePatterns[bgmStep % activePatterns.length];
+            step.forEach((note, index) => {
+                playTone({
+                    type: index === 0 ? 'square' : 'triangle',
+                    frequency: note.f,
+                    duration: note.d,
+                    volume: note.v,
+                    channel: 'bgm',
+                    startAt: index * 0.015
+                });
+            });
+            bgmStep++;
+        }
+
+        function shouldRunBgm() {
+            return isPlaying && !isGameOver && !isPaused && currentPhase !== PHASES.READY && settings.bgmEnabled && settings.bgmVolume > 0;
+        }
+
+        function syncBgmState() {
+            if (shouldRunBgm()) {
+                if (!bgmIntervalId) {
+                    playBgmStep();
+                    bgmIntervalId = setInterval(playBgmStep, 210);
+                }
+            } else if (bgmIntervalId) {
+                clearInterval(bgmIntervalId);
+                bgmIntervalId = null;
+            }
         }
 
         const se = {
@@ -237,11 +555,170 @@
                 playTone({ type: 'triangle', frequency: 440, duration: 0.06, volume: 0.02, slideTo: 660, startAt: 0 });
                 playTone({ type: 'triangle', frequency: 660, duration: 0.08, volume: 0.024, slideTo: 980, startAt: 0.06 });
             },
+            justDisarm() {
+                playTone({ type: 'square', frequency: 740, duration: 0.06, volume: 0.026, slideTo: 980, startAt: 0 });
+                playTone({ type: 'triangle', frequency: 980, duration: 0.08, volume: 0.024, slideTo: 1320, startAt: 0.04 });
+            },
+            fever() {
+                playTone({ type: 'square', frequency: 660, duration: 0.06, volume: 0.03, slideTo: 880, startAt: 0 });
+                playTone({ type: 'square', frequency: 880, duration: 0.06, volume: 0.03, slideTo: 1175, startAt: 0.05 });
+                playTone({ type: 'triangle', frequency: 1175, duration: 0.12, volume: 0.026, slideTo: 1568, startAt: 0.11 });
+            },
             gameOver() {
                 playTone({ type: 'square', frequency: 280, duration: 0.10, volume: 0.03, slideTo: 200, startAt: 0 });
                 playTone({ type: 'square', frequency: 200, duration: 0.14, volume: 0.028, slideTo: 120, startAt: 0.08 });
-            }
+            },
+            pause() { playTone({ type: 'triangle', frequency: 300, duration: 0.06, volume: 0.018, slideTo: 220 }); },
+            resume() { playTone({ type: 'triangle', frequency: 240, duration: 0.06, volume: 0.018, slideTo: 340 }); }
         };
+
+        function loadHighScore() {
+            const raw = localStorage.getItem(STORAGE_KEYS.HIGH_SCORE);
+            const parsed = Number(raw);
+            highScore = Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : 0;
+        }
+
+        function saveHighScore() {
+            localStorage.setItem(STORAGE_KEYS.HIGH_SCORE, String(highScore));
+        }
+
+        function syncHighScoreFromScore() {
+            if (score > highScore) {
+                highScore = score;
+                saveHighScore();
+            }
+            if (highScoreDisplay) highScoreDisplay.innerText = highScore;
+            if (finalHighScore) finalHighScore.innerText = highScore;
+        }
+
+        function loadSettings() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEYS.SETTINGS);
+                if (!raw) return;
+                const parsed = JSON.parse(raw);
+                if (typeof parsed.seVolume === 'number') settings.seVolume = Math.min(1, Math.max(0, parsed.seVolume));
+                if (typeof parsed.bgmVolume === 'number') settings.bgmVolume = Math.min(1, Math.max(0, parsed.bgmVolume));
+                if (typeof parsed.bgmEnabled === 'boolean') settings.bgmEnabled = parsed.bgmEnabled;
+                if (typeof parsed.difficulty === 'string' && DIFFICULTY_PRESETS[parsed.difficulty]) settings.difficulty = parsed.difficulty;
+                if (typeof parsed.lockDelay === 'number') settings.lockDelay = Math.min(900, Math.max(200, parsed.lockDelay));
+                if (typeof parsed.swipeSensitivity === 'number') settings.swipeSensitivity = Math.min(40, Math.max(14, parsed.swipeSensitivity));
+                if (typeof parsed.showDangerZone === 'boolean') settings.showDangerZone = parsed.showDangerZone;
+                if (parsed.keybinds && typeof parsed.keybinds === 'object') {
+                    settings.keybinds = { ...DEFAULT_KEYBINDS, ...parsed.keybinds };
+                }
+            } catch (error) {
+                console.warn('Failed to load settings', error);
+            }
+        }
+
+        function saveSettings() {
+            localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
+            syncBgmState();
+        }
+
+        function getDifficultyPreset() {
+            return DIFFICULTY_PRESETS[settings.difficulty] || DIFFICULTY_PRESETS.normal;
+        }
+
+        function formatKeyCode(code) {
+            const keyMap = {
+                ArrowLeft: '←',
+                ArrowRight: '→',
+                ArrowDown: '↓',
+                ArrowUp: '↑',
+                Space: 'SPACE',
+                ShiftLeft: 'LSHIFT',
+                ShiftRight: 'RSHIFT',
+                KeyP: 'P',
+                KeyO: 'O',
+                Escape: 'ESC'
+            };
+            if (keyMap[code]) return keyMap[code];
+            if (code.startsWith('Key')) return code.slice(3).toUpperCase();
+            if (code.startsWith('Digit')) return code.slice(5);
+            return code.toUpperCase();
+        }
+
+        function syncKeybindUi() {
+            keybindButtons.forEach((btn) => {
+                const action = btn.dataset.keybindAction;
+                const code = settings.keybinds[action] || DEFAULT_KEYBINDS[action];
+                const label = btn.firstChild.textContent.split(':')[0];
+                btn.innerHTML = `${label}: <span>${formatKeyCode(code)}</span>`;
+                btn.classList.toggle('ring-2', waitingForKeybindAction === action);
+                btn.classList.toggle('ring-cyan-400', waitingForKeybindAction === action);
+            });
+            if (keybindHint) {
+                keybindHint.innerText = waitingForKeybindAction
+                    ? `「${waitingForKeybindAction.toUpperCase()}」に割り当てるキーを押してください`
+                    : 'ボタンを押して次のキーを割り当て';
+            }
+        }
+
+        function syncSettingsUi() {
+            if (settingSeVolume) {
+                settingSeVolume.value = Math.round(settings.seVolume * 100);
+                settingSeVolumeValue.innerText = `${Math.round(settings.seVolume * 100)}%`;
+            }
+            if (settingBgmVolume) {
+                settingBgmVolume.value = Math.round(settings.bgmVolume * 100);
+                settingBgmVolumeValue.innerText = `${Math.round(settings.bgmVolume * 100)}%`;
+            }
+            if (settingBgmEnabled) {
+                settingBgmEnabled.checked = settings.bgmEnabled;
+            }
+            if (settingDifficulty) {
+                settingDifficulty.value = settings.difficulty;
+                settingDifficultyValue.innerText = getDifficultyPreset().label;
+            }
+            if (settingLockDelay) {
+                settingLockDelay.value = Math.round(settings.lockDelay);
+                settingLockDelayValue.innerText = `${Math.round(settings.lockDelay)}ms`;
+            }
+            if (settingSwipeSensitivity) {
+                settingSwipeSensitivity.value = Math.round(settings.swipeSensitivity);
+                settingSwipeSensitivityValue.innerText = `${Math.round(settings.swipeSensitivity)}px`;
+            }
+            if (settingShowDangerZone) {
+                settingShowDangerZone.checked = settings.showDangerZone;
+            }
+            syncKeybindUi();
+        }
+
+        function openSettings() {
+            if (isPlaying && !isGameOver && !isPaused && currentPhase !== PHASES.READY) {
+                togglePause(true);
+            }
+            syncSettingsUi();
+            settingsModal.classList.remove('hidden');
+            settingsModal.classList.add('flex');
+        }
+
+        function closeSettings() {
+            waitingForKeybindAction = null;
+            settingsModal.classList.add('hidden');
+            settingsModal.classList.remove('flex');
+            syncKeybindUi();
+        }
+
+        function togglePause(forceValue = null) {
+            if (currentPhase === PHASES.READY || isGameOver) return;
+            if (!isPlaying) return;
+            isPaused = forceValue === null ? !isPaused : !!forceValue;
+            const btnPause = document.getElementById('btnPause');
+            if (isPaused) {
+                pauseOverlay.classList.remove('hidden');
+                if (btnPause) btnPause.innerText = 'RESUME';
+                se.pause();
+                syncBgmState();
+            } else {
+                pauseOverlay.classList.add('hidden');
+                if (btnPause) btnPause.innerText = 'PAUSE';
+                lastTime = performance.now();
+                se.resume();
+                syncBgmState();
+            }
+        }
 
         function initBoard() {
             board = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
@@ -252,7 +729,7 @@
                 id: boardBlockIdCounter++,
                 color,
                 isBomb,
-                timeLeft: isBomb ? (timeLeft ?? BOMB_TIME_MS) : null,
+                timeLeft: isBomb ? (timeLeft ?? getBombTimeMs()) : null,
                 isClearing: false,
                 yOffset: 0
             };
@@ -268,7 +745,7 @@
                         block.isBomb = false;
                         block.timeLeft = null;
                     } else if (typeof block.timeLeft !== 'number' || !Number.isFinite(block.timeLeft)) {
-                        block.timeLeft = BOMB_TIME_MS;
+                        block.timeLeft = BALANCE.bomb.timeMs;
                     } else {
                         block.timeLeft = Math.max(0, block.timeLeft);
                     }
@@ -278,8 +755,76 @@
             }
         }
 
+        function getDangerStage() {
+            return Math.floor(dangerCount / BALANCE.danger.threshold);
+        }
+
+        function getDangerProgressRatio() {
+            return (dangerCount % BALANCE.danger.threshold) / BALANCE.danger.threshold;
+        }
+
+        function getFeverRatio() {
+            return feverTimer > 0 ? Math.max(0, Math.min(1, feverTimer / BALANCE.reward.feverDurationMs)) : Math.min(1, justDisarmChain / BALANCE.reward.feverRequirement);
+        }
+
+        function getScoreMultiplier() {
+            const feverMul = feverTimer > 0 ? BALANCE.reward.feverScoreMultiplier : 1;
+            return Math.max(1, level) * getDifficultyPreset().scoreMul * feverMul;
+        }
+
+        function showEventBanner(text, styleClass = 'border-white/30 bg-black/70 text-white', duration = 1400) {
+            if (!eventBanner) return;
+            eventBanner.innerText = text;
+            eventBanner.className = `small-arcade text-[11px] px-3 py-2 rounded-full border ${styleClass}`;
+            eventBanner.classList.remove('hidden');
+            eventBannerTimer = duration;
+            eventBannerClass = styleClass;
+        }
+
+        function updateEventBanner(deltaTime) {
+            if (eventBannerTimer <= 0 || !eventBanner) return;
+            eventBannerTimer -= deltaTime;
+            if (eventBannerTimer <= 0) {
+                eventBanner.classList.add('hidden');
+            }
+        }
+
+        function showMegaBonus(amount) {
+            if (!megaBonusOverlay || !megaBonusScore) return;
+            megaBonusScore.innerText = `+${Math.floor(amount)} BONUS`;
+            megaBonusOverlay.classList.remove('hidden');
+            megaBonusTimer = 1800;
+        }
+
+        function updateMegaBonusOverlay(deltaTime) {
+            if (megaBonusTimer <= 0 || !megaBonusOverlay) return;
+            megaBonusTimer -= deltaTime;
+            const progress = Math.max(0, megaBonusTimer / 1800);
+            megaBonusOverlay.style.opacity = String(progress);
+            megaBonusOverlay.style.transform = `translateY(${(1 - progress) * -18}px) scale(${0.9 + progress * 0.18})`;
+            if (megaBonusTimer <= 0) {
+                megaBonusOverlay.classList.add('hidden');
+                megaBonusOverlay.style.opacity = '1';
+                megaBonusOverlay.style.transform = 'translateY(0px) scale(1)';
+            }
+        }
+
+        function getTimeScale() {
+            return megaSlowTimer > 0 ? BALANCE.reward.megaSlowScale : 1;
+        }
+
+        function increaseDanger(amount = 1) {
+            const prevStage = getDangerStage();
+            dangerCount = Math.max(0, dangerCount + amount);
+            const nextStage = getDangerStage();
+            if (nextStage > prevStage) {
+                showEventBanner(`DANGER UP! STAGE ${nextStage}`, 'border-red-500/70 bg-red-950/75 text-red-200', 1700);
+            }
+            refreshHud();
+        }
+
         function addScore(type, amount = 1) {
-            const multiplier = Math.max(1, level);
+            const multiplier = getScoreMultiplier();
             switch (type) {
                 case 'softDrop':
                     score += SCORE_VALUES.SOFT_DROP * amount * multiplier;
@@ -293,16 +838,92 @@
                 case 'lineClear':
                     score += SCORE_VALUES.LINE_CLEAR[amount] * multiplier;
                     break;
+                case 'justDisarm':
+                    score += BALANCE.reward.justDisarmScore * amount * multiplier;
+                    break;
+                case 'megaClearBonus':
+                    score += BALANCE.reward.megaClearBonusScore * amount * multiplier;
+                    break;
             }
+            score = Math.floor(score);
             updateScoreBoard();
+            syncHighScoreFromScore();
         }
 
         function getBombChanceForLevel() {
-            return Math.min(MAX_BOMB_CHANCE, BASE_BOMB_CHANCE + (level - 1) * 0.05);
+            const preset = getDifficultyPreset();
+            const feverReduction = feverTimer > 0 ? BALANCE.bomb.feverChanceReduction : 0;
+            return Math.min(
+                BALANCE.bomb.maxChance,
+                Math.max(
+                    0.02,
+                    BALANCE.bomb.baseChance
+                    + (level - 1) * BALANCE.bomb.levelChanceStep
+                    + (totalExplodedBombs * BALANCE.bomb.explosionChanceStep)
+                    + preset.bombChanceOffset
+                    + getDangerStage() * BALANCE.danger.bombChanceStep
+                    - feverReduction
+                )
+            );
+        }
+
+        function getShortFuseCauseBreakdown() {
+            const preset = getDifficultyPreset();
+            return {
+                base: BALANCE.bomb.baseChance,
+                level: Math.max(0, (level - 1) * BALANCE.bomb.levelChanceStep),
+                explosions: Math.max(0, totalExplodedBombs * BALANCE.bomb.explosionChanceStep),
+                danger: Math.max(0, getDangerStage() * BALANCE.danger.bombChanceStep),
+                difficulty: preset.bombChanceOffset,
+                feverReduction: feverTimer > 0 ? BALANCE.bomb.feverChanceReduction : 0
+            };
+        }
+
+        function isShortFuseActive() {
+            return getBombChanceForLevel() > BALANCE.bomb.shortFuseChanceThreshold;
+        }
+
+        function getBombTimeMs() {
+            return isShortFuseActive()
+                ? BALANCE.bomb.shortFuseTimeMs
+                : BALANCE.bomb.timeMs;
+        }
+
+        function getGarbageBonusFromDanger() {
+            return getDangerStage();
+        }
+
+        function addPendingGarbage(blockCount) {
+            const adjusted = Math.max(1, Math.ceil(blockCount * BALANCE.danger.delayStockMultiplier));
+            pendingGarbage += adjusted;
+            return adjusted;
+        }
+
+        function getExplosionSpeedPenaltyMs() {
+            return Math.min(
+                BALANCE.speed.maxExplosionPenaltyMs,
+                totalExplodedBombs * BALANCE.speed.explosionStepMs
+            );
         }
 
         function getDropIntervalForLevel() {
-            return Math.max(MIN_DROP_INTERVAL, BASE_DROP_INTERVAL - (level - 1) * 75);
+            const preset = getDifficultyPreset();
+            const explosionSpeedPenaltyMs = getExplosionSpeedPenaltyMs();
+            return Math.max(
+                BALANCE.speed.minDropInterval,
+                BALANCE.speed.baseDropInterval - (level - 1) * BALANCE.speed.levelDropStep - explosionSpeedPenaltyMs + preset.dropOffset
+            );
+        }
+
+        function updateShortFuseModeState(forceBanner = false) {
+            const shortFuseActive = isShortFuseActive();
+            if ((forceBanner || !shortFuseModeAnnounced) && shortFuseActive) {
+                showEventBanner('DANGER MODE! BOMB FUSE 5s', 'border-red-500/70 bg-red-950/80 text-red-200', 1600);
+                shortFuseModeAnnounced = true;
+            } else if (!shortFuseActive) {
+                shortFuseModeAnnounced = false;
+            }
+            return shortFuseActive;
         }
 
         function chooseNextPiece() {
@@ -333,6 +954,28 @@
                     holdStatus.className = 'mt-1 text-[9px] text-yellow-400 small-arcade';
                 }
             }
+            if (dangerDisplay) dangerDisplay.innerText = `${dangerCount % BALANCE.danger.threshold} / ${BALANCE.danger.threshold}`;
+            if (dangerStageDisplay) dangerStageDisplay.innerText = `STAGE ${getDangerStage()}`;
+            if (dangerBar) dangerBar.style.width = `${Math.round(getDangerProgressRatio() * 100)}%`;
+            if (feverTimer > 0) {
+                if (feverDisplay) feverDisplay.innerText = `${(feverTimer / 1000).toFixed(1)}s`;
+                if (feverComboDisplay) feverComboDisplay.innerText = `ACTIVE x2 / CALM`;
+            } else {
+                if (feverDisplay) feverDisplay.innerText = justDisarmChain > 0 ? 'CHARGING' : 'READY';
+                if (feverComboDisplay) feverComboDisplay.innerText = `CHAIN ${justDisarmChain}/${BALANCE.reward.feverRequirement}`;
+            }
+            if (feverBar) feverBar.style.width = `${Math.round(getFeverRatio() * 100)}%`;
+            if (debugHud) debugHud.classList.toggle('hidden', !BALANCE.debug.enabled);
+            if (debugBombChance) debugBombChance.innerText = `${Math.round(getBombChanceForLevel() * 100)}%`;
+            if (debugFuseMode) {
+                const parts = getShortFuseCauseBreakdown();
+                const bombPercent = Math.round(getBombChanceForLevel() * 100);
+                debugFuseMode.innerText = updateShortFuseModeState()
+                    ? `5.0s @ ${bombPercent}%`
+                    : `10.0s @ ${bombPercent}%`;
+            }
+            if (debugGarbageStock) debugGarbageStock.innerText = `${pendingGarbage}`;
+            if (debugSpeedPenalty) debugSpeedPenalty.innerText = `${getExplosionSpeedPenaltyMs()}ms`;
         }
 
         function formatGameOverReason(reason) {
@@ -342,6 +985,7 @@
                 case 'garbage topped out': return 'お邪魔ブロックの落下先がなくなったため終了';
                 case 'lock above visible board': return 'ミノが盤面上端より上で固定されたため終了';
                 case 'board filled before garbage': return 'お邪魔ブロックを置ける列がなくなったため終了';
+                case 'garbage rise topped out': return 'せり上がったお邪魔ブロックで盤面上端が押し出されたため終了';
                 default: return reason || 'TOP OUT';
             }
         }
@@ -370,6 +1014,9 @@
 
         function startGame() {
             ensureAudio();
+            closeSettings();
+            pauseOverlay.classList.add('hidden');
+            isPaused = false;
             initBoard();
             fallingPieces = [];
             particles = [];
@@ -388,18 +1035,35 @@
             shakeTimer = 0;
             boardBlockIdCounter = 1;
             lastGameOverReason = '';
+            dangerCount = 0;
+            totalExplodedBombs = 0;
+            feverTimer = 0;
+            justDisarmChain = 0;
+            shortFuseModeAnnounced = false;
+            pendingJustDisarms = 0;
+            pendingBestJustDisarmTime = Infinity;
+            pendingMegaClear = false;
+            megaSlowTimer = 0;
+            megaBonusTimer = 0;
+            eventBannerTimer = 0;
+            if (megaBonusOverlay) megaBonusOverlay.classList.add('hidden');
             isGameOver = false;
             isPlaying = true;
+            bgmStep = 0;
             setPhase(PHASES.PLAYING);
 
             queueNextPiece();
+            syncHighScoreFromScore();
             refreshHud();
             spawnPiece();
+            const btnPause = document.getElementById('btnPause');
+            if (btnPause) btnPause.innerText = 'PAUSE';
 
             startOverlay.classList.add('hidden');
             gameOverOverlay.classList.add('hidden');
 
             lastTime = performance.now();
+            syncBgmState();
             requestAnimationFrame(gameLoop);
         }
 
@@ -410,18 +1074,23 @@
             isPlaying = false;
             setPhase(PHASES.GAME_OVER);
             currentPiece = null;
+            pauseOverlay.classList.add('hidden');
             fallingPieces = [];
             particles = [];
             explosionFlash = 0;
             shakeTimer = 0;
             clearAnimTimer = 0;
+            syncHighScoreFromScore();
             finalScore.innerText = score;
+            if (finalHighScore) finalHighScore.innerText = highScore;
             if (gameOverReasonDisplay) {
                 gameOverReasonDisplay.innerText = formatGameOverReason(lastGameOverReason);
             }
+            if (eventBanner) eventBanner.classList.add('hidden');
             draw();
             gameOverOverlay.classList.remove('hidden');
             se.gameOver();
+            syncBgmState();
             if (reason) console.info('GAME OVER:', reason);
         }
 
@@ -563,23 +1232,52 @@
             return cols;
         }
 
+        function getRandomGarbageColor() {
+            const randomKey = KEYS[Math.floor(Math.random() * KEYS.length)];
+            return TETROMINOS[randomKey].color;
+        }
+
+        function createGarbageRow(gapCol) {
+            return Array.from({ length: COLS }, (_, c) => {
+                if (c === gapCol) return null;
+                return createBoardBlock({ color: getRandomGarbageColor(), isBomb: false });
+            });
+        }
+
+        function riseGarbageRowsFromBottom() {
+            const blocksPerRow = COLS - 1;
+            if (pendingGarbage < blocksPerRow) return false;
+
+            const topOccupied = board[0].some(cell => cell !== null);
+            if (topOccupied) {
+                triggerGameOver('garbage rise topped out');
+                return false;
+            }
+
+            board.shift();
+            board.push(createGarbageRow(Math.floor(Math.random() * COLS)));
+            pendingGarbage -= blocksPerRow;
+            sanitizeBoardState();
+            showEventBanner(`GARBAGE RISE (${pendingGarbage})`, 'border-amber-500/70 bg-amber-950/75 text-amber-200', 1100);
+            refreshHud();
+            return true;
+        }
+
         function spawnGarbageBlock() {
             const availableCols = getGarbageSpawnColumns();
             if (!availableCols.length) {
-                triggerGameOver('board filled before garbage');
-                return false;
+                showEventBanner('GARBAGE DELAY', 'border-amber-500/70 bg-amber-950/75 text-amber-200', 900);
+                return 'deferred';
             }
-            const randomKey = KEYS[Math.floor(Math.random() * KEYS.length)];
-            const color = TETROMINOS[randomKey].color;
             const x = availableCols[Math.floor(Math.random() * availableCols.length)];
             fallingPieces.push({
                 shape: [[1]],
-                color,
+                color: getRandomGarbageColor(),
                 x,
                 y: -3,
                 fallTimer: GARBAGE_FALL_INTERVAL
             });
-            return true;
+            return 'spawned';
         }
 
         function checkCollision(targetX, targetY, shape, ignoreNpcIndex = -1) {
@@ -636,7 +1334,7 @@
                     board[boardY][boardX] = createBoardBlock({
                         color: piece.color,
                         isBomb: isBombCell,
-                        timeLeft: isBombCell ? BOMB_TIME_MS : null
+                        timeLeft: isBombCell ? getBombTimeMs() : null
                     });
                 }
             }
@@ -655,6 +1353,9 @@
 
         function checkLines() {
             linesToClear = [];
+            pendingJustDisarms = 0;
+            pendingBestJustDisarmTime = Infinity;
+            pendingMegaClear = false;
             for (let r = ROWS - 1; r >= 0; r--) {
                 let isFull = true;
                 for (let c = 0; c < COLS; c++) {
@@ -663,7 +1364,19 @@
                         break;
                     }
                 }
-                if (isFull) linesToClear.push(r);
+                if (isFull) {
+                    linesToClear.push(r);
+                    for (let c = 0; c < COLS; c++) {
+                        const block = board[r][c];
+                        if (block && block.isBomb && typeof block.timeLeft === 'number' && block.timeLeft <= BALANCE.reward.justDisarmWindowMs) {
+                            pendingJustDisarms++;
+                            pendingBestJustDisarmTime = Math.min(pendingBestJustDisarmTime, block.timeLeft);
+                            if (block.timeLeft > 0 && block.timeLeft <= 1000) {
+                                pendingMegaClear = true;
+                            }
+                        }
+                    }
+                }
             }
 
             if (linesToClear.length > 0) {
@@ -673,7 +1386,7 @@
                     for (let c = 0; c < COLS; c++) {
                         if (board[r][c]) {
                             board[r][c].isClearing = true;
-                            createParticles(c * BLOCK_SIZE + BLOCK_SIZE / 2, r * BLOCK_SIZE + BLOCK_SIZE / 2, board[r][c].color, 3);
+                            createParticles(c * BLOCK_SIZE + BLOCK_SIZE / 2, r * BLOCK_SIZE + BLOCK_SIZE / 2, board[r][c].color, 2);
                         }
                     }
                 });
@@ -715,10 +1428,12 @@
         }
 
         function createParticles(x, y, color, count = 10) {
+            const PARTICLE_CAP = 220;
             for (let i = 0; i < count; i++) {
+                if (particles.length >= PARTICLE_CAP) break;
                 particles.push(new Particle(x, y, color));
+                if (particles.length >= PARTICLE_CAP) break;
                 particles.push(new Particle(x, y, '#ffaa00'));
-                particles.push(new Particle(x, y, '#ffffff'));
             }
         }
 
@@ -735,10 +1450,12 @@
             particles = [];
         }
 
-        function randomBoardCell() {
+        function randomBoardCellInColumns(columns) {
+            const allowed = Array.from(new Set(columns || [])).filter(col => col >= 0 && col < COLS);
+            if (!allowed.length) return null;
             const cells = [];
             for (let r = 0; r < ROWS; r++) {
-                for (let c = 0; c < COLS; c++) {
+                for (const c of allowed) {
                     if (board[r][c]) cells.push({ r, c });
                 }
             }
@@ -747,8 +1464,12 @@
         }
 
 
-        function collapseBoardColumns() {
-            for (let c = 0; c < COLS; c++) {
+        function collapseBoardColumns(targetColumns = null) {
+            const columns = targetColumns === null
+                ? Array.from({ length: COLS }, (_, index) => index)
+                : Array.from(new Set(targetColumns)).filter(col => col >= 0 && col < COLS);
+
+            columns.forEach(c => {
                 const existing = [];
                 for (let r = ROWS - 1; r >= 0; r--) {
                     if (board[r][c]) {
@@ -765,22 +1486,147 @@
                     entry.block.yOffset = (entry.fromRow - targetRow) * BLOCK_SIZE;
                     board[targetRow][c] = entry.block;
                 });
-            }
+            });
             sanitizeBoardState();
+        }
+
+        function activateFever() {
+            feverTimer = BALANCE.reward.feverDurationMs;
+            justDisarmChain = 0;
+            bgmStep = 0;
+            se.fever();
+            showEventBanner('FEVER MODE x2!', 'border-fuchsia-500/70 bg-fuchsia-950/75 text-fuchsia-200', 2200);
+            refreshHud();
+            syncBgmState();
+        }
+
+        function applyJustDisarmBonus() {
+            if (pendingJustDisarms <= 0) return;
+            addScore('justDisarm', pendingJustDisarms);
+            justDisarmChain = Math.min(BALANCE.reward.feverRequirement, justDisarmChain + pendingJustDisarms);
+            se.justDisarm();
+            const urgentTag = pendingBestJustDisarmTime <= 500 ? 'CLUTCH SAVE!' : 'JUST DISARM!';
+            if (feverTimer > 0) {
+                feverTimer = Math.min(BALANCE.reward.feverDurationMs + 4000, feverTimer + pendingJustDisarms * BALANCE.reward.feverJustDisarmExtendMs);
+                showEventBanner(`${urgentTag} +${pendingJustDisarms} / FEVER EXTEND`, 'border-fuchsia-500/70 bg-fuchsia-950/75 text-fuchsia-200', 1800);
+                refreshHud();
+            } else {
+                showEventBanner(`${urgentTag} +${pendingJustDisarms}`, 'border-cyan-500/70 bg-cyan-950/75 text-cyan-200', 1800);
+                if (justDisarmChain >= BALANCE.reward.feverRequirement) {
+                    activateFever();
+                } else {
+                    refreshHud();
+                }
+            }
+            pendingJustDisarms = 0;
+            pendingBestJustDisarmTime = Infinity;
+        }
+
+        function tryRiseGarbageRow() {
+            const roseRow = riseGarbageRowsFromBottom();
+            if (isGameOver) return 'gameOver';
+            if (roseRow) {
+                if (checkLines()) return 'clearing';
+                return 'handled';
+            }
+            return 'none';
+        }
+
+        function tryDropGarbageBlocks(maxDrops = 2) {
+            let spawnedAny = false;
+            let topDropCount = 0;
+            while (pendingGarbage > 0 && pendingGarbage < COLS && topDropCount < maxDrops) {
+                const result = spawnGarbageBlock();
+                if (result === 'spawned') {
+                    pendingGarbage--;
+                    spawnedAny = true;
+                    topDropCount++;
+                    continue;
+                }
+                if (result === 'deferred') {
+                    showEventBanner(`GARBAGE DELAY ${pendingGarbage}`, 'border-amber-500/70 bg-amber-950/75 text-amber-200', 1000);
+                    break;
+                }
+                if (isGameOver) return 'gameOver';
+                break;
+            }
+            return spawnedAny ? 'handled' : 'none';
+        }
+
+        function finishGarbagePhaseAndMaybeSpawn() {
+            setPhase(PHASES.PLAYING);
+            if (!isGameOver && !currentPiece) {
+                spawnPiece();
+            }
         }
 
         function startGarbagePhaseOrSpawn() {
             drawHoldAndNext();
             if (pendingGarbage > 0) {
                 setPhase(PHASES.GARBAGE);
-                while (pendingGarbage > 0) {
-                    const spawned = spawnGarbageBlock();
-                    pendingGarbage--;
-                    if (!spawned || isGameOver) return;
+
+                const riseResult = tryRiseGarbageRow();
+                if (riseResult === 'gameOver') return;
+                if (riseResult === 'handled') {
+                    finishGarbagePhaseAndMaybeSpawn();
+                    return;
                 }
-            } else if (!isGameOver) {
+                if (riseResult === 'clearing') return;
+
+                const dropResult = tryDropGarbageBlocks(2);
+                if (dropResult === 'gameOver' || dropResult === 'handled') return;
+
+                finishGarbagePhaseAndMaybeSpawn();
+                return;
+            }
+
+            if (!isGameOver) {
                 spawnPiece();
             }
+        }
+
+        function triggerMegaClear() {
+            const occupiedCells = [];
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    if (!board[r][c]) continue;
+                    occupiedCells.push({ r, c, color: board[r][c].color });
+                }
+            }
+
+            const clearedCount = occupiedCells.length;
+            if (clearedCount <= 0) {
+                pendingMegaClear = false;
+                sanitizeBoardState();
+                return;
+            }
+
+            clearParticles();
+
+            const sampleStep = Math.max(1, Math.ceil(clearedCount / 12));
+            for (let i = 0; i < occupiedCells.length; i += sampleStep) {
+                const cell = occupiedCells[i];
+                createParticles(
+                    cell.c * BLOCK_SIZE + BLOCK_SIZE / 2,
+                    cell.r * BLOCK_SIZE + BLOCK_SIZE / 2,
+                    cell.color,
+                    1
+                );
+            }
+
+            for (const cell of occupiedCells) {
+                board[cell.r][cell.c] = null;
+            }
+
+            explosionFlash = Math.max(explosionFlash, 0.35);
+            shakeTimer = Math.max(shakeTimer, 120);
+            addScore('explosion', clearedCount);
+            addScore('megaClearBonus', 1);
+            showEventBanner('MEGA DISARM! ALL CLEAR!', 'border-yellow-400/70 bg-yellow-950/70 text-yellow-200', 1400);
+            se.clear();
+
+            pendingMegaClear = false;
+            sanitizeBoardState();
         }
 
         function processLineClearEnd() {
@@ -801,8 +1647,16 @@
             const linesCleared = clearedRows.length;
             lines += linesCleared;
             const prevLevel = level;
-            level = Math.floor(lines / LEVEL_LINE_STEP) + 1;
+            level = Math.floor(lines / BALANCE.speed.levelStepLines) + 1;
             addScore('lineClear', linesCleared);
+            if (feverTimer > 0 && pendingGarbage > 0) {
+                pendingGarbage = Math.max(0, pendingGarbage - linesCleared * BALANCE.reward.feverGarbageRelief);
+                showEventBanner(`FEVER RELIEF -${linesCleared * BALANCE.reward.feverGarbageRelief} GARBAGE`, 'border-fuchsia-500/70 bg-fuchsia-950/75 text-fuchsia-200', 1200);
+            }
+            applyJustDisarmBonus();
+            if (pendingMegaClear) {
+                triggerMegaClear();
+            }
             dropInterval = getDropIntervalForLevel();
             if (level > prevLevel) {
                 se.levelUp();
@@ -810,6 +1664,7 @@
             }
 
             linesToClear = [];
+            pendingMegaClear = false;
             clearAnimTimer = 0;
             clearParticles();
             canHold = true;
@@ -821,6 +1676,7 @@
         function updateBombs(deltaTime) {
             const cellsToClear = new Set();
             let didExplode = false;
+            let explodedBombs = 0;
 
             for (let r = 0; r < ROWS; r++) {
                 for (let c = 0; c < COLS; c++) {
@@ -828,6 +1684,7 @@
                     if (block && block.isBomb === true) {
                         block.timeLeft -= deltaTime;
                         if (block.timeLeft <= 0) {
+                            explodedBombs++;
                             for (let dr = -1; dr <= 1; dr++) {
                                 for (let dc = -1; dc <= 1; dc++) {
                                     const nr = r + dr;
@@ -848,26 +1705,42 @@
             explosionFlash = 0.8;
             shakeTimer = 500;
             se.explode();
+            totalExplodedBombs += explodedBombs;
+            dropInterval = getDropIntervalForLevel();
+            increaseDanger(explodedBombs);
+            const bombChancePercent = Math.round(getBombChanceForLevel() * 100);
+            showEventBanner(`MELTDOWN! BOMB ${bombChancePercent}% / SPD -${getExplosionSpeedPenaltyMs()}ms`, 'border-orange-500/70 bg-orange-950/75 text-orange-200', 1700);
+            updateShortFuseModeState(true);
 
             let explosionCount = 0;
             cellsToClear.forEach(pos => {
                 const [r, c] = pos.split(',').map(Number);
                 if (board[r][c]) {
-                    createParticles(c * BLOCK_SIZE + BLOCK_SIZE / 2, r * BLOCK_SIZE + BLOCK_SIZE / 2, board[r][c].color, 20);
+                    createParticles(c * BLOCK_SIZE + BLOCK_SIZE / 2, r * BLOCK_SIZE + BLOCK_SIZE / 2, board[r][c].color, 6);
                     board[r][c] = null;
                     explosionCount++;
                 }
             });
             if (explosionCount > 0) addScore('explosion', explosionCount);
 
-            const randomCell = randomBoardCell();
+            const explosionColumns = new Set();
+            cellsToClear.forEach(pos => {
+                const [, c] = pos.split(',').map(Number);
+                explosionColumns.add(c);
+            });
+
+            const randomCell = randomBoardCellInColumns([...explosionColumns]);
             if (randomCell && board[randomCell.r][randomCell.c]) {
                 createParticles(randomCell.c * BLOCK_SIZE + BLOCK_SIZE / 2, randomCell.r * BLOCK_SIZE + BLOCK_SIZE / 2, board[randomCell.r][randomCell.c].color, 16);
                 board[randomCell.r][randomCell.c] = null;
+                explosionColumns.add(randomCell.c);
             }
 
-            collapseBoardColumns();
-            pendingGarbage += BASE_GARBAGE_COUNT + Math.floor(Math.random() * 2);
+            collapseBoardColumns([...explosionColumns]);
+            const dangerGarbage = getGarbageBonusFromDanger();
+            const plannedGarbage = Math.max(1, BALANCE.danger.baseGarbageCount + Math.floor(Math.random() * 2) + getDifficultyPreset().garbageBonus + dangerGarbage);
+            const addedGarbage = addPendingGarbage(plannedGarbage);
+            showEventBanner(`BOOM! DANGER ${dangerCount} / +${addedGarbage} GARBAGE / STOCK ${pendingGarbage}`, 'border-red-500/70 bg-red-950/75 text-red-200', 1650);
 
             if (!checkLines() && !currentPiece && clearAnimTimer <= 0 && fallingPieces.length === 0) {
                 startGarbagePhaseOrSpawn();
@@ -918,6 +1791,7 @@
         function canAcceptPieceInput() {
             return isPlaying
                 && !isGameOver
+                && !isPaused
                 && currentPhase === PHASES.PLAYING
                 && clearAnimTimer <= 0
                 && fallingPieces.length === 0
@@ -930,17 +1804,30 @@
             lastTime = timestamp;
             if (deltaTime > 100) deltaTime = 100;
 
-            update(deltaTime);
+            if (!isPaused) {
+                update(deltaTime * getTimeScale(), deltaTime);
+            }
             draw();
             requestAnimationFrame(gameLoop);
         }
 
-        function update(deltaTime) {
+        function update(deltaTime, realDeltaTime = deltaTime) {
             if (isGameOver) return;
 
+            if (megaSlowTimer > 0) megaSlowTimer = Math.max(0, megaSlowTimer - realDeltaTime);
             updateParticles(deltaTime);
+            updateEventBanner(realDeltaTime);
+            updateMegaBonusOverlay(realDeltaTime);
 
             if (shakeTimer > 0) shakeTimer -= deltaTime;
+            if (feverTimer > 0) {
+                feverTimer = Math.max(0, feverTimer - deltaTime);
+                if (feverTimer === 0) {
+                    showEventBanner('FEVER END', 'border-fuchsia-500/70 bg-black/80 text-fuchsia-200', 1200);
+                    refreshHud();
+                    syncBgmState();
+                }
+            }
 
             for (let r = 0; r < ROWS; r++) {
                 for (let c = 0; c < COLS; c++) {
@@ -983,7 +1870,7 @@
 
             if (!canMovePieceDown()) {
                 lockTimer += deltaTime;
-                if (lockTimer >= LOCK_DELAY) {
+                if (lockTimer >= settings.lockDelay) {
                     finalizeLock(currentPiece);
                 }
             } else {
@@ -1017,7 +1904,7 @@
             }
 
             const dangerRows = getDangerRowCount();
-            if (isDangerZoneOccupied()) {
+            if (settings.showDangerZone && isDangerZoneOccupied()) {
                 ctx.fillStyle = 'rgba(255, 80, 80, 0.08)';
                 ctx.fillRect(0, 0, canvas.width, dangerRows * BLOCK_SIZE);
                 ctx.strokeStyle = 'rgba(255, 80, 80, 0.5)';
@@ -1043,6 +1930,11 @@
 
             for (const p of fallingPieces) drawPiece(p.x, p.y, p.shape, p.color, true);
             for (const p of particles) p.draw(ctx);
+
+            if (feverTimer > 0) {
+                ctx.fillStyle = `rgba(180, 50, 255, ${0.08 + 0.05 * Math.sin(Date.now() / 120)})`;
+                ctx.fillRect(-10, -10, canvas.width + 20, canvas.height + 20);
+            }
 
             if (explosionFlash > 0) {
                 ctx.fillStyle = `rgba(255, 50, 50, ${explosionFlash})`;
@@ -1135,6 +2027,7 @@
         function updateScoreBoard() {
             scoreDisplay.innerText = score;
             levelDisplay.innerText = level;
+            if (highScoreDisplay) highScoreDisplay.innerText = highScore;
         }
 
         function rotateMatrix(matrix) {
@@ -1228,7 +2121,7 @@
         canvas.addEventListener('touchstart', (e) => {
             e.preventDefault();
             ensureAudio();
-            if (!isPlaying || isGameOver || clearAnimTimer > 0) return;
+            if (!isPlaying || isGameOver || isPaused || clearAnimTimer > 0) return;
 
             if (e.touches.length >= 2) {
                 holdPiece();
@@ -1252,8 +2145,8 @@
             const currentY = e.touches[0].clientY;
             const dx = currentX - lastTouchX;
             const dy = currentY - lastTouchY;
-            const thresholdX = 24;
-            const thresholdY = 28;
+            const thresholdX = settings.swipeSensitivity;
+            const thresholdY = settings.swipeSensitivity + 4;
 
             if (Math.abs(dx) > thresholdX) {
                 if (dx > 0) moveRight();
@@ -1276,7 +2169,7 @@
 
         canvas.addEventListener('touchend', (e) => {
             e.preventDefault();
-            if (!isPlaying || isGameOver) return;
+            if (!isPlaying || isGameOver || isPaused) return;
 
             const dt = Date.now() - touchStartTime;
             const dx = lastTouchX - initialTouchX;
@@ -1292,33 +2185,151 @@
             }
         }, { passive: false });
 
+        function handleAction(action, event = null) {
+            if (action === 'pause') {
+                togglePause();
+                if (event) event.preventDefault();
+                return true;
+            }
+            if (action === 'settings') {
+                if (settingsModal.classList.contains('flex')) closeSettings();
+                else openSettings();
+                if (event) event.preventDefault();
+                return true;
+            }
+            if (isPaused) return false;
+            switch (action) {
+                case 'left': moveLeft(); return true;
+                case 'right': moveRight(); return true;
+                case 'down': moveDown(); return true;
+                case 'rotate': rotatePiece(); return true;
+                case 'drop': hardDrop(); if (event) event.preventDefault(); return true;
+                case 'hold': holdPiece(); if (event) event.preventDefault(); return true;
+                default: return false;
+            }
+        }
+
+        function getActionForCode(code) {
+            for (const [action, boundCode] of Object.entries(settings.keybinds)) {
+                if (boundCode === code) return action;
+            }
+            return null;
+        }
+
+        function beginKeybindCapture(action) {
+            waitingForKeybindAction = action;
+            syncKeybindUi();
+        }
+
+        function applyKeybind(action, code) {
+            settings.keybinds[action] = code;
+            saveSettings();
+            waitingForKeybindAction = null;
+            syncSettingsUi();
+        }
+
+        function resetKeybinds() {
+            settings.keybinds = { ...DEFAULT_KEYBINDS };
+            waitingForKeybindAction = null;
+            saveSettings();
+            syncSettingsUi();
+        }
+
         document.addEventListener('keydown', (e) => {
             ensureAudio();
-            switch (e.key) {
-                case 'ArrowLeft': moveLeft(); break;
-                case 'ArrowRight': moveRight(); break;
-                case 'ArrowDown': moveDown(); break;
-                case 'ArrowUp': rotatePiece(); break;
-                case ' ': hardDrop(); e.preventDefault(); break;
-                case 'Shift': holdPiece(); e.preventDefault(); break;
+            if (waitingForKeybindAction) {
+                e.preventDefault();
+                if (e.code === 'Escape') {
+                    waitingForKeybindAction = null;
+                    syncKeybindUi();
+                    return;
+                }
+                applyKeybind(waitingForKeybindAction, e.code);
+                return;
+            }
+
+            if (e.code === 'Escape' && settingsModal.classList.contains('flex')) {
+                closeSettings();
+                e.preventDefault();
+                return;
+            }
+
+            const action = getActionForCode(e.code)
+                || ((e.key === 'p' || e.key === 'P') ? 'pause' : null)
+                || ((e.key === 'o' || e.key === 'O') ? 'settings' : null)
+                || (e.key === 'Escape' ? 'pause' : null);
+
+            if (action) {
+                handleAction(action, e);
             }
         });
 
-        holdCanvas.addEventListener('click', () => { ensureAudio(); holdPiece(); });
-        document.getElementById('btnHold').addEventListener('pointerdown', (e) => { e.preventDefault(); ensureAudio(); holdPiece(); });
-        document.getElementById('btnLeft').addEventListener('pointerdown', (e) => { e.preventDefault(); ensureAudio(); moveLeft(); });
-        document.getElementById('btnRight').addEventListener('pointerdown', (e) => { e.preventDefault(); ensureAudio(); moveRight(); });
-        document.getElementById('btnDown').addEventListener('pointerdown', (e) => { e.preventDefault(); ensureAudio(); moveDown(); });
-        document.getElementById('btnRotate').addEventListener('pointerdown', (e) => { e.preventDefault(); ensureAudio(); rotatePiece(); });
-        document.getElementById('btnDrop').addEventListener('pointerdown', (e) => { e.preventDefault(); ensureAudio(); hardDrop(); });
+        holdCanvas.addEventListener('click', () => { ensureAudio(); if (!isPaused) holdPiece(); });
+        document.getElementById('btnHold').addEventListener('pointerdown', (e) => { e.preventDefault(); ensureAudio(); if (!isPaused) holdPiece(); });
+        document.getElementById('btnLeft').addEventListener('pointerdown', (e) => { e.preventDefault(); ensureAudio(); if (!isPaused) moveLeft(); });
+        document.getElementById('btnRight').addEventListener('pointerdown', (e) => { e.preventDefault(); ensureAudio(); if (!isPaused) moveRight(); });
+        document.getElementById('btnDown').addEventListener('pointerdown', (e) => { e.preventDefault(); ensureAudio(); if (!isPaused) moveDown(); });
+        document.getElementById('btnRotate').addEventListener('pointerdown', (e) => { e.preventDefault(); ensureAudio(); if (!isPaused) rotatePiece(); });
+        document.getElementById('btnDrop').addEventListener('pointerdown', (e) => { e.preventDefault(); ensureAudio(); if (!isPaused) hardDrop(); });
         document.getElementById('btnStart').addEventListener('click', () => { ensureAudio(); startGame(); });
         document.getElementById('btnRestart').addEventListener('click', () => { ensureAudio(); startGame(); });
+        document.getElementById('btnPause').addEventListener('click', () => { ensureAudio(); togglePause(); });
+        document.getElementById('btnResume').addEventListener('click', () => { ensureAudio(); togglePause(false); });
+        document.getElementById('btnSettings').addEventListener('click', () => { ensureAudio(); openSettings(); });
+        document.getElementById('btnCloseSettings').addEventListener('click', closeSettings);
+        settingsModal.addEventListener('click', (e) => {
+            if (e.target === settingsModal) closeSettings();
+        });
+
+        settingSeVolume.addEventListener('input', () => {
+            settings.seVolume = Number(settingSeVolume.value) / 100;
+            settingSeVolumeValue.innerText = `${settingSeVolume.value}%`;
+            saveSettings();
+        });
+        settingBgmVolume.addEventListener('input', () => {
+            settings.bgmVolume = Number(settingBgmVolume.value) / 100;
+            settingBgmVolumeValue.innerText = `${settingBgmVolume.value}%`;
+            saveSettings();
+        });
+        settingBgmEnabled.addEventListener('change', () => {
+            settings.bgmEnabled = settingBgmEnabled.checked;
+            saveSettings();
+        });
+        settingDifficulty.addEventListener('change', () => {
+            settings.difficulty = settingDifficulty.value;
+            settingDifficultyValue.innerText = getDifficultyPreset().label;
+            dropInterval = getDropIntervalForLevel();
+            saveSettings();
+        });
+        settingLockDelay.addEventListener('input', () => {
+            settings.lockDelay = Number(settingLockDelay.value);
+            settingLockDelayValue.innerText = `${settingLockDelay.value}ms`;
+            saveSettings();
+        });
+        settingSwipeSensitivity.addEventListener('input', () => {
+            settings.swipeSensitivity = Number(settingSwipeSensitivity.value);
+            settingSwipeSensitivityValue.innerText = `${settingSwipeSensitivity.value}px`;
+            saveSettings();
+        });
+        settingShowDangerZone.addEventListener('change', () => {
+            settings.showDangerZone = settingShowDangerZone.checked;
+            saveSettings();
+        });
+        keybindButtons.forEach((btn) => {
+            btn.addEventListener('click', () => beginKeybindCapture(btn.dataset.keybindAction));
+        });
+        btnResetKeybinds.addEventListener('click', resetKeybinds);
 
         function bootstrap() {
+            loadSettings();
+            loadHighScore();
+            syncSettingsUi();
+            syncHighScoreFromScore();
             initBoard();
             queueNextPiece();
             refreshHud();
             draw();
+            syncBgmState();
         }
 
         bootstrap();
