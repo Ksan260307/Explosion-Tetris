@@ -14,6 +14,7 @@
             color: #e5e7eb;
             overflow-x: hidden;
             overscroll-behavior-y: contain;
+            min-height: 100dvh;
         }
         .font-arcade { font-family: 'Press Start 2P', cursive; }
         .small-arcade { font-family: 'Press Start 2P', cursive; letter-spacing: 0.04em; }
@@ -42,40 +43,239 @@
         .settings-panel input[type="range"] {
             width: 100%;
         }
+        .app-shell {
+            width: 100%;
+            max-width: 680px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            margin: 0 auto;
+        }
+        .top-hud, .action-row, .status-row, .debug-row, .controls-row, .help-row {
+            width: 100%;
+            max-width: 680px;
+        }
+        .mobile-action-btn {
+            min-height: 52px;
+        }
+        @media (max-width: 640px) {
+            body {
+                justify-content: flex-start;
+                padding: 8px 8px 10px;
+            }
+            .app-shell {
+                max-width: min(100vw - 16px, 390px);
+                gap: 6px;
+            }
+            .font-arcade {
+                letter-spacing: 0.02em;
+            }
+            .small-arcade {
+                letter-spacing: 0.01em;
+            }
+            .mini-label {
+                font-size: 7px;
+                line-height: 1.15;
+            }
+            .hud-card {
+                border-radius: 10px;
+            }
+            .top-hud,
+            .action-row,
+            .status-row,
+            .debug-row,
+            .controls-row,
+            .help-row {
+                max-width: 100%;
+            }
+            .top-hud {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+                gap: 4px;
+            }
+            .top-hud .stat-card,
+            .top-hud .piece-card {
+                padding: 6px 4px;
+                min-height: 60px;
+            }
+            .top-hud .wide-stat {
+                grid-column: span 2 / span 2;
+            }
+            #holdCanvas,
+            #nextCanvas {
+                width: 42px;
+                height: 42px;
+            }
+            #holdStatus {
+                margin-top: 3px;
+                font-size: 7px;
+            }
+            #scoreDisplay,
+            #levelDisplay,
+            #highScoreDisplay {
+                font-size: 10px;
+                line-height: 1.1;
+            }
+            .action-row,
+            .status-row {
+                gap: 4px;
+            }
+            .action-row button {
+                padding: 8px 6px;
+                font-size: 9px;
+            }
+            .status-row > div {
+                padding: 8px 8px;
+            }
+            .status-row .small-arcade {
+                font-size: 10px;
+            }
+            .status-row .h-2 {
+                margin-top: 6px;
+                height: 6px;
+            }
+            .debug-row {
+                display: none;
+            }
+            .canvas-stage {
+                width: 100%;
+                margin-top: 2px;
+            }
+            #gameCanvas {
+                width: min(62vw, 248px);
+                height: auto;
+                border-radius: 12px;
+            }
+            #eventBanner {
+                max-width: calc(100% - 18px);
+                text-align: center;
+                font-size: 8px;
+                line-height: 1.4;
+                padding: 6px 8px;
+            }
+            #megaBonusOverlay .font-arcade {
+                font-size: 16px;
+            }
+            #megaBonusScore {
+                margin-top: 6px;
+                font-size: 11px;
+            }
+            #startOverlay h2,
+            #pauseOverlay h2,
+            #gameOverOverlay h2 {
+                font-size: 18px;
+                line-height: 1.4;
+                margin-bottom: 10px;
+            }
+            #startOverlay p,
+            #pauseOverlay p,
+            #gameOverReason,
+            #gameOverOverlay p {
+                font-size: 10px;
+            }
+            #btnStart,
+            #btnRestart,
+            #btnResume {
+                padding: 10px 16px;
+                font-size: 11px;
+            }
+            #settingsModal {
+                padding: 8px;
+            }
+            .settings-panel {
+                max-width: min(100%, 360px);
+                padding: 12px;
+            }
+            .controls-row {
+                gap: 4px;
+                max-width: 340px;
+                opacity: 0.92;
+            }
+            .controls-row button {
+                padding: 8px 6px;
+                border-radius: 10px;
+            }
+            .mobile-action-btn {
+                min-height: 44px;
+            }
+            #btnHold,
+            #btnDrop {
+                font-size: 10px;
+            }
+            #btnLeft,
+            #btnRight,
+            #btnRotate,
+            #btnDown {
+                font-size: 18px;
+                line-height: 1;
+            }
+            .help-row {
+                display: none;
+            }
+        }
+        @media (max-width: 640px) and (max-height: 900px) {
+            .app-shell {
+                gap: 5px;
+            }
+            .top-hud .stat-card,
+            .top-hud .piece-card {
+                min-height: 56px;
+                padding: 5px 4px;
+            }
+            #holdCanvas,
+            #nextCanvas {
+                width: 38px;
+                height: 38px;
+            }
+            #gameCanvas {
+                width: min(58vw, 232px);
+            }
+            .controls-row {
+                max-width: 320px;
+            }
+            .mobile-action-btn {
+                min-height: 40px;
+            }
+        }
+        @media (max-width: 390px) {
+            #gameCanvas {
+                width: min(56vw, 224px);
+            }
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-3 sm:p-4">
-    <div class="w-full max-w-4xl flex flex-col items-center gap-3">
-        <div class="w-full max-w-[680px] grid grid-cols-5 gap-2 sm:gap-3">
-            <div class="hud-card p-2 sm:p-3 flex flex-col items-center justify-center">
+    <div class="app-shell w-full max-w-4xl flex flex-col items-center gap-3">
+        <div class="top-hud grid grid-cols-5 gap-2 sm:gap-3">
+            <div class="hud-card piece-card p-2 sm:p-3 flex flex-col items-center justify-center">
                 <div class="mini-label mb-1">HOLD</div>
                 <canvas id="holdCanvas" width="72" height="72" class="bg-gray-950 rounded-lg border border-gray-800 cursor-pointer pressable"></canvas>
                 <div id="holdStatus" class="mt-1 text-[9px] text-gray-500 small-arcade">READY</div>
             </div>
-            <div class="hud-card p-2 sm:p-3 flex flex-col items-center justify-center">
+            <div class="hud-card stat-card wide-stat p-2 sm:p-3 flex flex-col items-center justify-center">
                 <div class="mini-label mb-1">SCORE</div>
                 <div id="scoreDisplay" class="small-arcade text-sm sm:text-base text-green-400 text-center break-all">0</div>
             </div>
-            <div class="hud-card p-2 sm:p-3 flex flex-col items-center justify-center">
+            <div class="hud-card stat-card p-2 sm:p-3 flex flex-col items-center justify-center">
                 <div class="mini-label mb-1">LEVEL</div>
                 <div id="levelDisplay" class="small-arcade text-sm sm:text-base text-cyan-400">1</div>
             </div>
-            <div class="hud-card p-2 sm:p-3 flex flex-col items-center justify-center">
+            <div class="hud-card stat-card wide-stat p-2 sm:p-3 flex flex-col items-center justify-center">
                 <div class="mini-label mb-1">HIGH</div>
                 <div id="highScoreDisplay" class="small-arcade text-sm sm:text-base text-yellow-300 text-center break-all">0</div>
             </div>
-            <div class="hud-card p-2 sm:p-3 flex flex-col items-center justify-center">
+            <div class="hud-card piece-card p-2 sm:p-3 flex flex-col items-center justify-center">
                 <div class="mini-label mb-1">NEXT</div>
                 <canvas id="nextCanvas" width="72" height="72" class="bg-gray-950 rounded-lg border border-gray-800"></canvas>
             </div>
         </div>
 
-        <div class="w-full max-w-[680px] grid grid-cols-2 gap-2">
+        <div class="action-row grid grid-cols-2 gap-2">
             <button id="btnPause" class="hud-card py-2 px-3 text-xs sm:text-sm small-arcade text-gray-200 hover:bg-gray-800/70 transition-colors">PAUSE</button>
             <button id="btnSettings" class="hud-card py-2 px-3 text-xs sm:text-sm small-arcade text-gray-200 hover:bg-gray-800/70 transition-colors">SETTINGS</button>
         </div>
 
-        <div class="w-full max-w-[680px] grid grid-cols-2 gap-2">
+        <div class="status-row grid grid-cols-2 gap-2">
             <div class="hud-card px-3 py-2">
                 <div class="flex items-center justify-between gap-3">
                     <div>
@@ -102,7 +302,7 @@
             </div>
         </div>
 
-        <div class="w-full max-w-[680px] grid grid-cols-2 sm:grid-cols-4 gap-2" id="debugHud">
+        <div class="debug-row grid grid-cols-2 sm:grid-cols-4 gap-2" id="debugHud">
             <div class="hud-card px-3 py-2">
                 <div class="mini-label mb-1">BOMB%</div>
                 <div id="debugBombChance" class="small-arcade text-[11px] text-orange-300">0%</div>
@@ -121,7 +321,7 @@
             </div>
         </div>
 
-        <div class="relative w-full flex justify-center">
+        <div class="canvas-stage relative w-full flex justify-center">
             <canvas id="gameCanvas" width="300" height="600" class="canvas-container bg-gray-950 border-2 border-gray-800 rounded-xl block"></canvas>
             <div class="absolute inset-x-0 top-3 z-20 flex flex-col items-center pointer-events-none gap-3">
                 <div id="eventBanner" class="hidden small-arcade text-[11px] px-3 py-2 rounded-full border bg-black/70 text-white"></div>
@@ -227,17 +427,17 @@
             </div>
         </div>
 
-        <div class="w-full max-w-[540px] grid grid-cols-4 gap-2 md:hidden opacity-80">
-            <button id="btnHold" class="bg-blue-900 border border-blue-700 p-3 rounded-xl text-xs font-arcade active:bg-blue-800">HOLD</button>
-            <button id="btnLeft" class="bg-gray-800 border border-gray-700 p-3 rounded-xl text-2xl active:bg-gray-700">⬅️</button>
-            <button id="btnRight" class="bg-gray-800 border border-gray-700 p-3 rounded-xl text-2xl active:bg-gray-700">➡️</button>
-            <button id="btnRotate" class="bg-gray-800 border border-gray-700 p-3 rounded-xl text-2xl active:bg-gray-700">🔄</button>
+        <div class="controls-row w-full max-w-[540px] grid grid-cols-4 gap-2 md:hidden opacity-85">
+            <button id="btnHold" class="mobile-action-btn bg-blue-900 border border-blue-700 p-2.5 sm:p-3 rounded-xl text-[11px] font-arcade active:bg-blue-800">HOLD</button>
+            <button id="btnLeft" class="mobile-action-btn bg-gray-800 border border-gray-700 p-2.5 sm:p-3 rounded-xl text-xl sm:text-2xl active:bg-gray-700">⬅️</button>
+            <button id="btnRight" class="mobile-action-btn bg-gray-800 border border-gray-700 p-2.5 sm:p-3 rounded-xl text-xl sm:text-2xl active:bg-gray-700">➡️</button>
+            <button id="btnRotate" class="mobile-action-btn bg-gray-800 border border-gray-700 p-2.5 sm:p-3 rounded-xl text-xl sm:text-2xl active:bg-gray-700">🔄</button>
 
-            <button id="btnDown" class="bg-gray-800 border border-gray-700 p-3 rounded-xl text-2xl active:bg-gray-700 col-span-2">⬇️</button>
-            <button id="btnDrop" class="bg-red-900 border border-red-700 p-3 rounded-xl text-xl font-arcade col-span-2 active:bg-red-800">DROP</button>
+            <button id="btnDown" class="mobile-action-btn bg-gray-800 border border-gray-700 p-2.5 sm:p-3 rounded-xl text-xl sm:text-2xl active:bg-gray-700 col-span-2">⬇️</button>
+            <button id="btnDrop" class="mobile-action-btn bg-red-900 border border-red-700 p-2.5 sm:p-3 rounded-xl text-base sm:text-xl font-arcade col-span-2 active:bg-red-800">DROP</button>
         </div>
 
-        <div class="w-full max-w-[540px] hud-card px-3 py-2 text-[11px] sm:text-xs text-gray-400 leading-relaxed">
+        <div class="help-row w-full max-w-[540px] hud-card px-3 py-2 text-[10px] sm:text-xs text-gray-400 leading-relaxed">
             <span class="text-gray-200 font-bold">操作:</span>
             タップ=回転 / 左右スワイプ=移動 / 下スワイプ=ソフトドロップ / 上フリック=ハードドロップ / 2本指タップ or HOLD=ホールド
             <span class="hidden md:inline"> / ←→=移動 / ↑=回転 / ↓=ソフトドロップ / Space=ハードドロップ / Shift=ホールド</span>
