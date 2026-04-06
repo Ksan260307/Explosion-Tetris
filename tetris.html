@@ -7,141 +7,133 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Noto+Sans+JP:wght@400;700&display=swap');
-        
+
         body {
             font-family: 'Noto Sans JP', sans-serif;
             background-color: #050505;
-            color: #e0e0e0;
+            color: #e5e7eb;
             overflow-x: hidden;
-            /* スワイプによるリロードなどを防止 */
-            overscroll-behavior-y: contain; 
+            overscroll-behavior-y: contain;
         }
-        .font-arcade {
-            font-family: 'Press Start 2P', cursive;
-        }
+        .font-arcade { font-family: 'Press Start 2P', cursive; }
+        .small-arcade { font-family: 'Press Start 2P', cursive; letter-spacing: 0.04em; }
         .canvas-container {
-            box-shadow: 0 0 30px rgba(255, 0, 85, 0.2), 0 0 10px rgba(0, 255, 255, 0.2);
-            /* タッチ操作時のデフォルトのブラウザ挙動を無効化 */
+            box-shadow: 0 0 30px rgba(255, 0, 85, 0.12), 0 0 12px rgba(0, 255, 255, 0.10);
             touch-action: none;
             -webkit-touch-callout: none;
             -webkit-user-select: none;
             user-select: none;
         }
-        button:active {
-            transform: scale(0.95);
+        button:active, .pressable:active { transform: scale(0.96); }
+        .hud-card {
+            background: rgba(17, 24, 39, 0.90);
+            border: 1px solid rgba(75, 85, 99, 0.8);
+            border-radius: 14px;
+            backdrop-filter: blur(10px);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+        }
+        .mini-label {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 9px;
+            line-height: 1.4;
+            color: #9ca3af;
+            letter-spacing: 0.08em;
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center p-4">
+<body class="min-h-screen flex flex-col items-center justify-center p-3 sm:p-4">
+    <div class="w-full max-w-4xl flex flex-col items-center gap-3">
+        <div class="w-full max-w-[540px] grid grid-cols-4 gap-2 sm:gap-3">
+            <div class="hud-card p-2 sm:p-3 flex flex-col items-center justify-center">
+                <div class="mini-label mb-1">HOLD</div>
+                <canvas id="holdCanvas" width="72" height="72" class="bg-gray-950 rounded-lg border border-gray-800 cursor-pointer pressable"></canvas>
+                <div id="holdStatus" class="mt-1 text-[9px] text-gray-500 small-arcade">READY</div>
+            </div>
+            <div class="hud-card p-2 sm:p-3 flex flex-col items-center justify-center">
+                <div class="mini-label mb-1">SCORE</div>
+                <div id="scoreDisplay" class="small-arcade text-sm sm:text-base text-green-400 text-center break-all">0</div>
+            </div>
+            <div class="hud-card p-2 sm:p-3 flex flex-col items-center justify-center">
+                <div class="mini-label mb-1">LEVEL</div>
+                <div id="levelDisplay" class="small-arcade text-sm sm:text-base text-cyan-400">1</div>
+            </div>
+            <div class="hud-card p-2 sm:p-3 flex flex-col items-center justify-center">
+                <div class="mini-label mb-1">NEXT</div>
+                <canvas id="nextCanvas" width="72" height="72" class="bg-gray-950 rounded-lg border border-gray-800"></canvas>
+            </div>
+        </div>
 
-    <div class="max-w-5xl w-full flex flex-col md:flex-row gap-8 items-center md:items-start justify-center">
-        
-        <!-- 左側：情報パネル -->
-        <div class="flex flex-col gap-6 w-full md:w-64 order-2 md:order-1">
-            <div>
-                <h1 class="text-3xl font-arcade text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-yellow-400 mb-2">
-                    BOMB<br>TETRIS
-                </h1>
-                <p class="text-sm text-gray-400 leading-relaxed">
-                    基本は通常のテトリス！<br>
-                    一定時間で降ってくる<span class="text-red-500 font-bold">時限爆弾ミノ</span>を消せないと、10秒後に周囲を巻き込んで大爆発！<br>
-                    爆発後は<span class="text-gray-400 font-bold">お邪魔ブロック</span>が降ってくるぞ！
+        <div class="relative w-full flex justify-center">
+            <canvas id="gameCanvas" width="300" height="600" class="canvas-container bg-gray-950 border-2 border-gray-800 rounded-xl block"></canvas>
+
+            <div id="startOverlay" class="absolute inset-0 bg-black/80 flex flex-col items-center justify-center rounded-xl z-10">
+                <h2 class="text-2xl font-arcade text-white mb-4 text-center leading-loose">READY TO<br>EXPLODE?</h2>
+                <p class="text-xs sm:text-sm text-gray-400 text-center mb-5 leading-relaxed px-6">
+                    ゴースト表示つきの爆弾テトリス。<br>
+                    爆弾を放置すると周囲が吹き飛び、さらに盤面のどこか1マスも消滅。
                 </p>
+                <button id="btnStart" class="bg-red-600 hover:bg-red-500 text-white font-arcade py-3 px-6 rounded-xl shadow-[0_0_15px_rgba(255,0,0,0.4)] transition-all">START</button>
             </div>
 
-            <div class="flex gap-4">
-                <div class="bg-gray-900 border border-gray-700 p-2 rounded-lg flex-1 flex flex-col items-center">
-                    <div class="text-gray-400 text-[10px] font-arcade mb-1">HOLD</div>
-                    <canvas id="holdCanvas" width="80" height="80" class="bg-gray-950 rounded border border-gray-800 cursor-pointer active:scale-95 transition-transform"></canvas>
-                </div>
-                <div class="bg-gray-900 border border-gray-700 p-2 rounded-lg flex-1 flex flex-col items-center">
-                    <div class="text-gray-400 text-[10px] font-arcade mb-1">NEXT</div>
-                    <canvas id="nextCanvas" width="80" height="80" class="bg-gray-950 rounded border border-gray-800"></canvas>
-                </div>
-            </div>
-
-            <div class="bg-gray-900 border border-gray-700 p-4 rounded-lg shadow-inner flex justify-between md:flex-col">
-                <div>
-                    <div class="text-gray-400 text-sm font-arcade mb-1">SCORE</div>
-                    <div id="scoreDisplay" class="text-2xl font-arcade text-green-400">0</div>
-                </div>
-                <div class="md:mt-4">
-                    <div class="text-gray-400 text-sm font-arcade mb-1">LEVEL</div>
-                    <div id="levelDisplay" class="text-2xl font-arcade text-blue-400">1</div>
-                </div>
-            </div>
-
-            <div class="bg-gray-900 border border-gray-700 p-4 rounded-lg">
-                <h2 class="text-sm font-arcade text-gray-300 mb-3">CONTROLS</h2>
-                <div class="text-xs text-gray-400 space-y-4 font-mono">
-                    <div class="hidden md:block">
-                        <p class="font-bold text-gray-300 mb-1">[ KEYBOARD ]</p>
-                        <ul class="space-y-1">
-                            <li><kbd class="bg-gray-800 px-1 py-0.5 rounded border border-gray-600">←</kbd> <kbd class="bg-gray-800 px-1 py-0.5 rounded border border-gray-600">→</kbd> : 移動</li>
-                            <li><kbd class="bg-gray-800 px-1 py-0.5 rounded border border-gray-600">↑</kbd> : 回転</li>
-                            <li><kbd class="bg-gray-800 px-1 py-0.5 rounded border border-gray-600">↓</kbd> : ソフトドロップ</li>
-                            <li><kbd class="bg-gray-800 px-1 py-0.5 rounded border border-gray-600">Space</kbd> : クイックドロップ</li>
-                            <li><kbd class="bg-gray-800 px-1 py-0.5 rounded border border-gray-600">Shift</kbd> : ホールド</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <p class="font-bold text-gray-300 mb-1">[ TOUCH AREA ]</p>
-                        <ul class="space-y-1">
-                            <li>タップ : 回転</li>
-                            <li>左右スワイプ : 移動</li>
-                            <li>下スワイプ : ソフトドロップ</li>
-                            <li>上フリック : クイックドロップ</li>
-                            <li>2本指タップ / HOLD枠タップ : ホールド</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 中央：ゲーム画面 -->
-        <div class="relative order-1 md:order-2">
-            <canvas id="gameCanvas" width="300" height="600" class="canvas-container bg-gray-950 border-2 border-gray-800 rounded-md block"></canvas>
-            
-            <!-- スタートオーバーレイ -->
-            <div id="startOverlay" class="absolute inset-0 bg-black/80 flex flex-col items-center justify-center rounded-md z-10">
-                <h2 class="text-2xl font-arcade text-white mb-6 text-center leading-loose">READY TO<br>EXPLODE?</h2>
-                <button id="btnStart" class="bg-red-600 hover:bg-red-500 text-white font-arcade py-3 px-6 rounded shadow-[0_0_15px_rgba(255,0,0,0.5)] transition-all">
-                    START
-                </button>
-            </div>
-
-            <!-- ゲームオーバーオーバーレイ -->
-            <div id="gameOverOverlay" class="absolute inset-0 bg-black/80 flex flex-col items-center justify-center rounded-md z-10 hidden">
+            <div id="gameOverOverlay" class="absolute inset-0 bg-black/80 flex flex-col items-center justify-center rounded-xl z-10 hidden">
                 <h2 class="text-3xl font-arcade text-red-500 mb-2">GAME OVER</h2>
-                <p class="text-gray-300 mb-6 font-mono">FINAL SCORE: <span id="finalScore" class="text-yellow-400 font-bold text-xl">0</span></p>
-                <button id="btnRestart" class="bg-blue-600 hover:bg-blue-500 text-white font-arcade py-3 px-6 rounded shadow-[0_0_15px_rgba(0,100,255,0.5)] transition-all">
-                    RETRY
-                </button>
+                <p class="text-gray-300 mb-2 font-mono">FINAL SCORE: <span id="finalScore" class="text-yellow-400 font-bold text-xl">0</span></p>
+                <p id="gameOverReason" class="text-[11px] sm:text-xs text-red-200/90 bg-red-950/40 border border-red-800 rounded-lg px-3 py-2 mb-6 max-w-[240px] text-center leading-relaxed">TOP OUT</p>
+                <button id="btnRestart" class="bg-blue-600 hover:bg-blue-500 text-white font-arcade py-3 px-6 rounded-xl shadow-[0_0_15px_rgba(0,100,255,0.4)] transition-all">RETRY</button>
             </div>
         </div>
 
-        <!-- 右側/下側：モバイル用コントロールボタン（補助用） -->
-        <div class="grid grid-cols-4 gap-2 w-full max-w-[340px] md:hidden order-3 opacity-70">
-            <button id="btnHold" class="bg-blue-900 border border-blue-700 p-3 rounded-lg text-sm font-arcade active:bg-blue-800">HOLD</button>
-            <button id="btnLeft" class="bg-gray-800 border border-gray-700 p-3 rounded-lg text-2xl active:bg-gray-700">⬅️</button>
-            <button id="btnRight" class="bg-gray-800 border border-gray-700 p-3 rounded-lg text-2xl active:bg-gray-700">➡️</button>
-            <button id="btnRotate" class="bg-gray-800 border border-gray-700 p-3 rounded-lg text-2xl active:bg-gray-700">🔄</button>
-            
-            <button id="btnDown" class="bg-gray-800 border border-gray-700 p-3 rounded-lg text-2xl active:bg-gray-700 col-span-2">⬇️</button>
-            <button id="btnDrop" class="bg-red-900 border border-red-700 p-3 rounded-lg text-xl font-arcade col-span-2 active:bg-red-800">DROP</button>
+        <div class="w-full max-w-[540px] grid grid-cols-4 gap-2 md:hidden opacity-80">
+            <button id="btnHold" class="bg-blue-900 border border-blue-700 p-3 rounded-xl text-xs font-arcade active:bg-blue-800">HOLD</button>
+            <button id="btnLeft" class="bg-gray-800 border border-gray-700 p-3 rounded-xl text-2xl active:bg-gray-700">⬅️</button>
+            <button id="btnRight" class="bg-gray-800 border border-gray-700 p-3 rounded-xl text-2xl active:bg-gray-700">➡️</button>
+            <button id="btnRotate" class="bg-gray-800 border border-gray-700 p-3 rounded-xl text-2xl active:bg-gray-700">🔄</button>
+
+            <button id="btnDown" class="bg-gray-800 border border-gray-700 p-3 rounded-xl text-2xl active:bg-gray-700 col-span-2">⬇️</button>
+            <button id="btnDrop" class="bg-red-900 border border-red-700 p-3 rounded-xl text-xl font-arcade col-span-2 active:bg-red-800">DROP</button>
         </div>
 
+        <div class="w-full max-w-[540px] hud-card px-3 py-2 text-[11px] sm:text-xs text-gray-400 leading-relaxed">
+            <span class="text-gray-200 font-bold">操作:</span>
+            タップ=回転 / 左右スワイプ=移動 / 下スワイプ=ソフトドロップ / 上フリック=ハードドロップ / 2本指タップ or HOLD=ホールド
+            <span class="hidden md:inline"> / ←→=移動 / ↑=回転 / ↓=ソフトドロップ / Space=ハードドロップ / Shift=ホールド</span>
+        </div>
     </div>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        
+
         const COLS = 10;
         const ROWS = 20;
         const BLOCK_SIZE = 30;
+        const LOCK_DELAY = 450;
+        const GARBAGE_FALL_INTERVAL = 45;
+        const BASE_DROP_INTERVAL = 950;
+        const MIN_DROP_INTERVAL = 110;
+        const LEVEL_LINE_STEP = 10;
+        const BASE_BOMB_CHANCE = 0.14;
+        const MAX_BOMB_CHANCE = 0.60;
+        const BASE_GARBAGE_COUNT = 2;
+        const BOMB_TIME_MS = 10000;
+        const PARTICLE_MAX_AGE = 260;
+        const PARTICLE_CLEAR_MARGIN = 80;
 
-        // 色とミノの定義
+        const PHASES = Object.freeze({
+            READY: 'ready',
+            PLAYING: 'playing',
+            CLEARING: 'clearing',
+            GARBAGE: 'garbage',
+            GAME_OVER: 'game_over'
+        });
+
+        const SCORE_VALUES = Object.freeze({
+            SOFT_DROP: 1,
+            HARD_DROP: 2,
+            EXPLOSION_CELL: 50,
+            LINE_CLEAR: [0, 100, 300, 500, 800]
+        });
+
         const TETROMINOS = {
             I: { shape: [[1,1,1,1]], color: '#00ffff' },
             J: { shape: [[1,0,0],[1,1,1]], color: '#2563eb' },
@@ -157,224 +149,456 @@
         let currentPiece = null;
         let fallingPieces = [];
         let particles = [];
-        
+        let pendingGarbage = 0;
+
         let score = 0;
         let level = 1;
         let lines = 0;
-        
+
         let isPlaying = false;
         let isGameOver = false;
-        
+        let currentPhase = PHASES.READY;
+
         let lastTime = 0;
         let dropTimer = 0;
-        let dropInterval = 1000;
-        
+        let lockTimer = 0;
+        let dropInterval = BASE_DROP_INTERVAL;
+
         let nextPieceKey = null;
+        let nextPieceBomb = false;
         let holdPieceKey = null;
         let canHold = true;
-        let bombSpawnTimer = 20000; // 20秒ごとに爆弾ミノ生成
-        let nextIsBomb = false;
 
         let explosionFlash = 0;
         let clearAnimTimer = 0;
         let linesToClear = [];
         let shakeTimer = 0;
+        let boardBlockIdCounter = 1;
+        let lastGameOverReason = '';
 
-        // UI要素
         const scoreDisplay = document.getElementById('scoreDisplay');
         const levelDisplay = document.getElementById('levelDisplay');
         const finalScore = document.getElementById('finalScore');
+        const gameOverReasonDisplay = document.getElementById('gameOverReason');
         const startOverlay = document.getElementById('startOverlay');
         const gameOverOverlay = document.getElementById('gameOverOverlay');
         const holdCanvas = document.getElementById('holdCanvas');
         const holdCtx = holdCanvas.getContext('2d');
+        const holdStatus = document.getElementById('holdStatus');
         const nextCanvas = document.getElementById('nextCanvas');
         const nextCtx = nextCanvas.getContext('2d');
 
-        // 初期化処理
+        let audioCtx = null;
+        let audioUnlocked = false;
+
+        function ensureAudio() {
+            if (!audioCtx) {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContextClass) return;
+                audioCtx = new AudioContextClass();
+            }
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            audioUnlocked = true;
+        }
+
+        function playTone({ type = 'square', frequency = 440, duration = 0.06, volume = 0.03, slideTo = null, startAt = 0 }) {
+            if (!audioUnlocked || !audioCtx) return;
+            const now = audioCtx.currentTime + startAt;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(frequency, now);
+            if (slideTo !== null) osc.frequency.linearRampToValueAtTime(slideTo, now + duration);
+            gain.gain.setValueAtTime(0.0001, now);
+            gain.gain.exponentialRampToValueAtTime(volume, now + 0.01);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now);
+            osc.stop(now + duration + 0.02);
+        }
+
+        const se = {
+            move() { playTone({ type: 'square', frequency: 280, duration: 0.03, volume: 0.018, slideTo: 250 }); },
+            rotate() { playTone({ type: 'triangle', frequency: 520, duration: 0.05, volume: 0.02, slideTo: 660 }); },
+            hold() { playTone({ type: 'square', frequency: 220, duration: 0.07, volume: 0.02, slideTo: 320 }); },
+            softDrop() { playTone({ type: 'square', frequency: 180, duration: 0.025, volume: 0.012, slideTo: 170 }); },
+            hardDrop() { playTone({ type: 'sawtooth', frequency: 240, duration: 0.08, volume: 0.028, slideTo: 120 }); },
+            lock() { playTone({ type: 'triangle', frequency: 150, duration: 0.05, volume: 0.022, slideTo: 110 }); },
+            clear() {
+                playTone({ type: 'square', frequency: 620, duration: 0.06, volume: 0.025, slideTo: 780, startAt: 0 });
+                playTone({ type: 'square', frequency: 780, duration: 0.07, volume: 0.022, slideTo: 960, startAt: 0.04 });
+            },
+            explode() {
+                playTone({ type: 'sawtooth', frequency: 160, duration: 0.15, volume: 0.05, slideTo: 65, startAt: 0 });
+                playTone({ type: 'square', frequency: 100, duration: 0.10, volume: 0.03, slideTo: 45, startAt: 0.035 });
+            },
+            levelUp() {
+                playTone({ type: 'triangle', frequency: 440, duration: 0.06, volume: 0.02, slideTo: 660, startAt: 0 });
+                playTone({ type: 'triangle', frequency: 660, duration: 0.08, volume: 0.024, slideTo: 980, startAt: 0.06 });
+            },
+            gameOver() {
+                playTone({ type: 'square', frequency: 280, duration: 0.10, volume: 0.03, slideTo: 200, startAt: 0 });
+                playTone({ type: 'square', frequency: 200, duration: 0.14, volume: 0.028, slideTo: 120, startAt: 0.08 });
+            }
+        };
+
         function initBoard() {
             board = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
         }
 
+        function createBoardBlock({ color, isBomb = false, timeLeft = null }) {
+            return {
+                id: boardBlockIdCounter++,
+                color,
+                isBomb,
+                timeLeft: isBomb ? (timeLeft ?? BOMB_TIME_MS) : null,
+                isClearing: false,
+                yOffset: 0
+            };
+        }
+
+        function sanitizeBoardState() {
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    const block = board[r][c];
+                    if (!block) continue;
+                    if (typeof block.id !== 'number') block.id = boardBlockIdCounter++;
+                    if (block.isBomb !== true) {
+                        block.isBomb = false;
+                        block.timeLeft = null;
+                    } else if (typeof block.timeLeft !== 'number' || !Number.isFinite(block.timeLeft)) {
+                        block.timeLeft = BOMB_TIME_MS;
+                    } else {
+                        block.timeLeft = Math.max(0, block.timeLeft);
+                    }
+                    block.isClearing = !!block.isClearing;
+                    block.yOffset = Number.isFinite(block.yOffset) ? block.yOffset : 0;
+                }
+            }
+        }
+
+        function addScore(type, amount = 1) {
+            const multiplier = Math.max(1, level);
+            switch (type) {
+                case 'softDrop':
+                    score += SCORE_VALUES.SOFT_DROP * amount * multiplier;
+                    break;
+                case 'hardDrop':
+                    score += SCORE_VALUES.HARD_DROP * amount * multiplier;
+                    break;
+                case 'explosion':
+                    score += SCORE_VALUES.EXPLOSION_CELL * amount * multiplier;
+                    break;
+                case 'lineClear':
+                    score += SCORE_VALUES.LINE_CLEAR[amount] * multiplier;
+                    break;
+            }
+            updateScoreBoard();
+        }
+
+        function getBombChanceForLevel() {
+            return Math.min(MAX_BOMB_CHANCE, BASE_BOMB_CHANCE + (level - 1) * 0.05);
+        }
+
+        function getDropIntervalForLevel() {
+            return Math.max(MIN_DROP_INTERVAL, BASE_DROP_INTERVAL - (level - 1) * 75);
+        }
+
+        function chooseNextPiece() {
+            return {
+                key: KEYS[Math.floor(Math.random() * KEYS.length)],
+                isBomb: Math.random() < getBombChanceForLevel()
+            };
+        }
+
+        function queueNextPiece() {
+            const next = chooseNextPiece();
+            nextPieceKey = next.key;
+            nextPieceBomb = next.isBomb;
+        }
+
+        function refreshHud() {
+            drawHoldAndNext();
+            updateScoreBoard();
+            if (holdStatus) {
+                if (!holdPieceKey) {
+                    holdStatus.innerText = 'EMPTY';
+                    holdStatus.className = 'mt-1 text-[9px] text-gray-500 small-arcade';
+                } else if (canHold) {
+                    holdStatus.innerText = 'READY';
+                    holdStatus.className = 'mt-1 text-[9px] text-cyan-400 small-arcade';
+                } else {
+                    holdStatus.innerText = 'LOCK';
+                    holdStatus.className = 'mt-1 text-[9px] text-yellow-400 small-arcade';
+                }
+            }
+        }
+
+        function formatGameOverReason(reason) {
+            switch (reason) {
+                case 'spawn blocked': return '新しいミノの出現位置が埋まったため終了';
+                case 'hold spawn blocked': return 'HOLDから取り出す位置が埋まっていたためHOLDをキャンセル';
+                case 'garbage topped out': return 'お邪魔ブロックの落下先がなくなったため終了';
+                case 'lock above visible board': return 'ミノが盤面上端より上で固定されたため終了';
+                case 'board filled before garbage': return 'お邪魔ブロックを置ける列がなくなったため終了';
+                default: return reason || 'TOP OUT';
+            }
+        }
+
+        function getDangerRowCount() {
+            return 2;
+        }
+
+        function isDangerZoneOccupied() {
+            const rows = getDangerRowCount();
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    if (board[r][c]) return true;
+                }
+            }
+            return false;
+        }
+
+        function canSpawnPieceObject(piece) {
+            return !checkCollision(piece.x, piece.y, piece.shape);
+        }
+
+        function setPhase(nextPhase) {
+            currentPhase = nextPhase;
+        }
+
         function startGame() {
+            ensureAudio();
             initBoard();
             fallingPieces = [];
             particles = [];
+            pendingGarbage = 0;
             score = 0;
             level = 1;
             lines = 0;
-            dropInterval = 1000;
-            bombSpawnTimer = 20000;
-            nextIsBomb = false;
+            dropInterval = getDropIntervalForLevel();
+            dropTimer = 0;
+            lockTimer = 0;
             holdPieceKey = null;
             canHold = true;
-            nextPieceKey = KEYS[Math.floor(Math.random() * KEYS.length)];
             explosionFlash = 0;
             clearAnimTimer = 0;
             linesToClear = [];
             shakeTimer = 0;
+            boardBlockIdCounter = 1;
+            lastGameOverReason = '';
             isGameOver = false;
             isPlaying = true;
-            
-            updateScoreBoard();
-            drawHoldAndNext();
+            setPhase(PHASES.PLAYING);
+
+            queueNextPiece();
+            refreshHud();
             spawnPiece();
-            
+
             startOverlay.classList.add('hidden');
             gameOverOverlay.classList.add('hidden');
-            
+
             lastTime = performance.now();
             requestAnimationFrame(gameLoop);
         }
 
-        function gameOver() {
+        function triggerGameOver(reason = '') {
+            if (isGameOver) return;
+            lastGameOverReason = reason || 'TOP OUT';
             isGameOver = true;
             isPlaying = false;
+            setPhase(PHASES.GAME_OVER);
+            currentPiece = null;
+            fallingPieces = [];
+            particles = [];
+            explosionFlash = 0;
+            shakeTimer = 0;
+            clearAnimTimer = 0;
             finalScore.innerText = score;
+            if (gameOverReasonDisplay) {
+                gameOverReasonDisplay.innerText = formatGameOverReason(lastGameOverReason);
+            }
+            draw();
             gameOverOverlay.classList.remove('hidden');
+            se.gameOver();
+            if (reason) console.info('GAME OVER:', reason);
         }
 
         function drawHoldAndNext() {
-            // Hold描画
             holdCtx.fillStyle = '#050505';
             holdCtx.fillRect(0, 0, holdCanvas.width, holdCanvas.height);
             if (holdPieceKey) {
                 drawMiniPiece(holdCtx, holdPieceKey, canHold ? TETROMINOS[holdPieceKey].color : '#666');
             }
-            
-            // Next描画
+
             nextCtx.fillStyle = '#050505';
             nextCtx.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
             if (nextPieceKey) {
-                drawMiniPiece(nextCtx, nextPieceKey, TETROMINOS[nextPieceKey].color, nextIsBomb);
+                drawMiniPiece(nextCtx, nextPieceKey, TETROMINOS[nextPieceKey].color, nextPieceBomb);
             }
         }
 
-        function drawMiniPiece(ctx, key, color, isBomb = false) {
-            let shape = TETROMINOS[key].shape;
-            let bs = 15; // block size for mini canvas
-            let offsetX = (ctx.canvas.width - shape[0].length * bs) / 2;
-            let offsetY = (ctx.canvas.height - shape.length * bs) / 2;
-            
+        function drawMiniPiece(targetCtx, key, color, isBomb = false) {
+            const shape = TETROMINOS[key].shape;
+            const bs = 14;
+            const offsetX = (targetCtx.canvas.width - shape[0].length * bs) / 2;
+            const offsetY = (targetCtx.canvas.height - shape.length * bs) / 2;
+
+            let firstBlock = null;
             for (let r = 0; r < shape.length; r++) {
                 for (let c = 0; c < shape[r].length; c++) {
-                    if (shape[r][c]) {
-                        ctx.fillStyle = color;
-                        ctx.fillRect(offsetX + c*bs, offsetY + r*bs, bs, bs);
-                        ctx.strokeStyle = '#000';
-                        ctx.strokeRect(offsetX + c*bs, offsetY + r*bs, bs, bs);
-                        
-                        if (isBomb && r === 0 && c === shape[r].findIndex(val => val === 1)) {
-                            // 最初のブロックに爆弾マーク
-                            ctx.fillStyle = 'red';
-                            ctx.beginPath();
-                            ctx.arc(offsetX + c*bs + bs/2, offsetY + r*bs + bs/2, bs/4, 0, Math.PI*2);
-                            ctx.fill();
-                        }
-                    }
+                    if (!shape[r][c]) continue;
+                    if (!firstBlock) firstBlock = { r, c };
+                    targetCtx.fillStyle = color;
+                    targetCtx.fillRect(offsetX + c * bs, offsetY + r * bs, bs, bs);
+                    targetCtx.strokeStyle = '#000';
+                    targetCtx.strokeRect(offsetX + c * bs, offsetY + r * bs, bs, bs);
                 }
+            }
+            if (isBomb && firstBlock) {
+                targetCtx.fillStyle = 'red';
+                targetCtx.beginPath();
+                targetCtx.arc(offsetX + firstBlock.c * bs + bs / 2, offsetY + firstBlock.r * bs + bs / 2, bs / 4, 0, Math.PI * 2);
+                targetCtx.fill();
             }
         }
 
-        // ミノのスポーン
-        function spawnPiece(fromHold = false) {
-            let key = fromHold ? holdPieceKey : nextPieceKey;
-            let shape = TETROMINOS[key].shape;
-            
+        function makePieceFromKey(key, isBombPiece = false) {
+            const shape = TETROMINOS[key].shape.map(row => [...row]);
             let bombPos = null;
-            if (!fromHold && nextIsBomb) {
-                // 爆弾ブロックの位置を決める
-                let blocks = [];
-                for(let r=0; r<shape.length; r++) {
-                    for(let c=0; c<shape[r].length; c++) {
-                        if(shape[r][c]) blocks.push({r, c});
+            if (isBombPiece) {
+                const cells = [];
+                for (let r = 0; r < shape.length; r++) {
+                    for (let c = 0; c < shape[r].length; c++) {
+                        if (shape[r][c]) cells.push({ r, c });
                     }
                 }
-                bombPos = blocks[Math.floor(Math.random() * blocks.length)];
-                nextIsBomb = false;
+                bombPos = cells[Math.floor(Math.random() * cells.length)];
             }
-
-            currentPiece = {
-                key: key,
-                shape: shape,
+            return {
+                key,
+                shape,
                 color: TETROMINOS[key].color,
                 x: Math.floor(COLS / 2) - Math.floor(shape[0].length / 2),
                 y: 0,
-                bombPos: bombPos // null or {r, c}
+                bombPos
             };
-            
-            if (!fromHold) {
-                nextPieceKey = KEYS[Math.floor(Math.random() * KEYS.length)];
-            }
-            
-            drawHoldAndNext();
+        }
 
-            if (checkCollision(currentPiece.x, currentPiece.y, currentPiece.shape)) {
-                gameOver();
+        function canPlacePiece(piece) {
+            return canSpawnPieceObject(piece);
+        }
+
+        function spawnPiece(fromHold = false, heldKeyOverride = null, failMode = 'gameover') {
+            const key = fromHold ? heldKeyOverride : nextPieceKey;
+            const bombFlag = fromHold ? false : nextPieceBomb;
+            const nextPiece = makePieceFromKey(key, bombFlag);
+
+            if (!canPlacePiece(nextPiece)) {
+                refreshHud();
+                if (failMode === 'gameover') {
+                    triggerGameOver(fromHold ? 'hold spawn blocked' : 'spawn blocked');
+                }
+                return false;
             }
+
+            if (!fromHold) {
+                queueNextPiece();
+            }
+
+            currentPiece = nextPiece;
+            lockTimer = 0;
+            dropTimer = 0;
+            setPhase(PHASES.PLAYING);
+            refreshHud();
+            return true;
         }
 
         function holdPiece() {
-            if (!canHold || !isPlaying || isGameOver) return;
-            
-            let currentKey = currentPiece.key;
-            if (holdPieceKey === null) {
-                holdPieceKey = currentKey;
-                spawnPiece();
-            } else {
-                let temp = holdPieceKey;
-                holdPieceKey = currentKey;
-                spawnPiece(true);
-                currentPiece.key = temp;
-                currentPiece.shape = TETROMINOS[temp].shape;
-                currentPiece.color = TETROMINOS[temp].color;
-                currentPiece.bombPos = null; // ホールド時に爆弾属性は解除
+            if (!canAcceptPieceInput() || !currentPiece) return;
+            if (!canHold) {
+                refreshHud();
+                return;
             }
+            ensureAudio();
+
+            const currentKey = currentPiece.key;
+            const swapKey = holdPieceKey;
+
+            if (swapKey !== null) {
+                const previewHeld = makePieceFromKey(swapKey, false);
+                if (!canPlacePiece(previewHeld)) {
+                    if (holdStatus) {
+                        holdStatus.innerText = 'BLOCK';
+                        holdStatus.className = 'mt-1 text-[9px] text-red-400 small-arcade';
+                        setTimeout(() => refreshHud(), 220);
+                    }
+                    console.info('HOLD canceled: spawn blocked');
+                    return;
+                }
+            }
+
+            se.hold();
+            currentPiece = null;
             canHold = false;
-            drawHoldAndNext();
+
+            if (swapKey === null) {
+                holdPieceKey = currentKey;
+                spawnPiece(false);
+            } else {
+                holdPieceKey = currentKey;
+                spawnPiece(true, swapKey, 'cancel');
+            }
+            refreshHud();
         }
 
-        // ゴミブロックの落下
+        function getGarbageSpawnColumns() {
+            const cols = [];
+            for (let c = 0; c < COLS; c++) {
+                if (board[0][c] !== null) continue;
+                const occupiedByFalling = fallingPieces.some(npc => npc.x === c && npc.y <= 0);
+                if (!occupiedByFalling) cols.push(c);
+            }
+            return cols;
+        }
+
         function spawnGarbageBlock() {
-            let randomKey = KEYS[Math.floor(Math.random() * KEYS.length)];
-            let color = TETROMINOS[randomKey].color;
-            let garbage = {
+            const availableCols = getGarbageSpawnColumns();
+            if (!availableCols.length) {
+                triggerGameOver('board filled before garbage');
+                return false;
+            }
+            const randomKey = KEYS[Math.floor(Math.random() * KEYS.length)];
+            const color = TETROMINOS[randomKey].color;
+            const x = availableCols[Math.floor(Math.random() * availableCols.length)];
+            fallingPieces.push({
                 shape: [[1]],
-                color: color, 
-                x: Math.floor(Math.random() * COLS),
-                y: -1, 
-                fallTimer: 50 // 高速落下
-            };
-            fallingPieces.push(garbage);
+                color,
+                x,
+                y: -3,
+                fallTimer: GARBAGE_FALL_INTERVAL
+            });
+            return true;
         }
 
-        // 衝突判定
         function checkCollision(targetX, targetY, shape, ignoreNpcIndex = -1) {
             for (let r = 0; r < shape.length; r++) {
                 for (let c = 0; c < shape[r].length; c++) {
-                    if (shape[r][c]) {
-                        let newX = targetX + c;
-                        let newY = targetY + r;
+                    if (!shape[r][c]) continue;
+                    const newX = targetX + c;
+                    const newY = targetY + r;
 
-                        if (newX < 0 || newX >= COLS || newY >= ROWS) return true;
-                        if (newY >= 0 && board[newY][newX] !== null) return true;
+                    if (newX < 0 || newX >= COLS || newY >= ROWS) return true;
+                    if (newY >= 0 && board[newY][newX] !== null) return true;
 
-                        for (let i = 0; i < fallingPieces.length; i++) {
-                            if (i === ignoreNpcIndex) continue;
-                            let npc = fallingPieces[i];
-                            let rOffset = newY - npc.y;
-                            let cOffset = newX - npc.x;
-                            if (rOffset >= 0 && rOffset < npc.shape.length && cOffset >= 0 && cOffset < npc.shape[rOffset].length) {
-                                if (npc.shape[rOffset][cOffset]) return true;
-                            }
-                        }
-
-                        if (ignoreNpcIndex !== -1 && currentPiece) {
-                            let rOffset = newY - currentPiece.y;
-                            let cOffset = newX - currentPiece.x;
-                            if (rOffset >= 0 && rOffset < currentPiece.shape.length && cOffset >= 0 && cOffset < currentPiece.shape[rOffset].length) {
-                                if (currentPiece.shape[rOffset][cOffset]) return true;
-                            }
+                    for (let i = 0; i < fallingPieces.length; i++) {
+                        if (i === ignoreNpcIndex) continue;
+                        const npc = fallingPieces[i];
+                        const rOffset = newY - npc.y;
+                        const cOffset = newX - npc.x;
+                        if (rOffset >= 0 && rOffset < npc.shape.length && cOffset >= 0 && cOffset < npc.shape[rOffset].length) {
+                            if (npc.shape[rOffset][cOffset]) return true;
                         }
                     }
                 }
@@ -382,40 +606,53 @@
             return false;
         }
 
-        // ブロックの固定
-        function lockPiece(piece) {
+        function canMovePieceDown(piece = currentPiece) {
+            return piece && !checkCollision(piece.x, piece.y + 1, piece.shape);
+        }
+
+        function getGhostY(piece = currentPiece) {
+            if (!piece) return 0;
+            let ghostY = piece.y;
+            while (!checkCollision(piece.x, ghostY + 1, piece.shape)) {
+                ghostY++;
+            }
+            return ghostY;
+        }
+
+        function finalizeLock(piece) {
+            if (!piece) return;
             for (let r = 0; r < piece.shape.length; r++) {
                 for (let c = 0; c < piece.shape[r].length; c++) {
-                    if (piece.shape[r][c]) {
-                        let boardY = piece.y + r;
-                        let boardX = piece.x + c;
-                        
-                        if (boardY < 0) {
-                            gameOver(); 
-                            return;
-                        }
-                        
-                        if (boardY >= 0 && boardY < ROWS) {
-                            let isBomb = piece.bombPos && piece.bombPos.r === r && piece.bombPos.c === c;
-                            board[boardY][boardX] = {
-                                color: piece.color,
-                                isBomb: isBomb,
-                                timeLeft: isBomb ? 10000 : null, // 10秒カウントダウン
-                                isClearing: false,
-                                yOffset: 0
-                            };
-                        }
+                    if (!piece.shape[r][c]) continue;
+                    const boardY = piece.y + r;
+                    const boardX = piece.x + c;
+
+                    if (boardY < 0) {
+                        triggerGameOver('lock above visible board');
+                        return;
                     }
+
+                    const isBombCell = !!(piece.bombPos && piece.bombPos.r === r && piece.bombPos.c === c);
+                    board[boardY][boardX] = createBoardBlock({
+                        color: piece.color,
+                        isBomb: isBombCell,
+                        timeLeft: isBombCell ? BOMB_TIME_MS : null
+                    });
                 }
             }
+
+            sanitizeBoardState();
+            se.lock();
+            currentPiece = null;
+            lockTimer = 0;
+            dropTimer = 0;
+            canHold = true;
+
             if (!checkLines()) {
-                canHold = true;
-                drawHoldAndNext();
-                if (!isGameOver) spawnPiece();
+                startGarbagePhaseOrSpawn();
             }
         }
 
-        // ライン消去
         function checkLines() {
             linesToClear = [];
             for (let r = ROWS - 1; r >= 0; r--) {
@@ -426,175 +663,178 @@
                         break;
                     }
                 }
-                
-                if (isFull) {
-                    linesToClear.push(r);
-                }
+                if (isFull) linesToClear.push(r);
             }
-            
+
             if (linesToClear.length > 0) {
-                clearAnimTimer = 400; // 400msのエフェクト時間
+                clearAnimTimer = 320;
+                setPhase(PHASES.CLEARING);
                 linesToClear.forEach(r => {
-                    for(let c=0; c<COLS; c++) {
+                    for (let c = 0; c < COLS; c++) {
                         if (board[r][c]) {
                             board[r][c].isClearing = true;
-                            createParticles(c * BLOCK_SIZE + BLOCK_SIZE/2, r * BLOCK_SIZE + BLOCK_SIZE/2, board[r][c].color, 3);
+                            createParticles(c * BLOCK_SIZE + BLOCK_SIZE / 2, r * BLOCK_SIZE + BLOCK_SIZE / 2, board[r][c].color, 3);
                         }
                     }
                 });
+                se.clear();
                 return true;
             }
             return false;
         }
 
-        // パーティクルクラス
         class Particle {
             constructor(x, y, color) {
                 this.x = x;
                 this.y = y;
-                this.vx = (Math.random() - 0.5) * 12;
-                this.vy = (Math.random() - 0.5) * 12;
-                this.life = 1.0;
-                this.decay = Math.random() * 0.03 + 0.02;
+                this.vx = (Math.random() - 0.5) * 11;
+                this.vy = (Math.random() - 0.5) * 11;
+                this.age = 0;
+                this.maxAge = PARTICLE_MAX_AGE + Math.random() * PARTICLE_CLEAR_MARGIN;
                 this.color = color;
-                this.size = Math.random() * 5 + 2;
+                this.size = Math.random() * 4 + 2;
             }
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-                this.life -= this.decay;
+            update(deltaTime) {
+                this.x += this.vx * (deltaTime / 16.67);
+                this.y += this.vy * (deltaTime / 16.67);
+                this.vx *= 0.96;
+                this.vy *= 0.96;
+                this.age += deltaTime;
             }
-            draw(ctx) {
-                ctx.globalAlpha = Math.max(0, this.life);
-                ctx.fillStyle = this.color;
-                ctx.fillRect(this.x, this.y, this.size, this.size);
-                ctx.globalAlpha = 1.0;
+            get life() {
+                return Math.max(0, 1 - this.age / this.maxAge);
+            }
+            draw(targetCtx) {
+                const life = this.life;
+                if (life <= 0) return;
+                targetCtx.globalAlpha = life;
+                targetCtx.fillStyle = this.color;
+                targetCtx.fillRect(this.x, this.y, this.size, this.size);
+                targetCtx.globalAlpha = 1.0;
             }
         }
 
         function createParticles(x, y, color, count = 10) {
             for (let i = 0; i < count; i++) {
                 particles.push(new Particle(x, y, color));
-                particles.push(new Particle(x, y, '#ffaa00')); 
+                particles.push(new Particle(x, y, '#ffaa00'));
                 particles.push(new Particle(x, y, '#ffffff'));
             }
         }
 
-        // メインループ
-        function gameLoop(timestamp) {
-            if (!isPlaying) return;
-            
-            let deltaTime = timestamp - lastTime;
-            lastTime = timestamp;
-            
-            if (deltaTime > 100) deltaTime = 100;
-
-            update(deltaTime);
-            draw();
-            
-            requestAnimationFrame(gameLoop);
+        function updateParticles(deltaTime) {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].update(deltaTime);
+                if (particles[i].life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
         }
 
-        // 状態の更新
-        function update(deltaTime) {
-            if (isGameOver) return;
+        function clearParticles() {
+            particles = [];
+        }
 
-            if (shakeTimer > 0) shakeTimer -= deltaTime;
+        function randomBoardCell() {
+            const cells = [];
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    if (board[r][c]) cells.push({ r, c });
+                }
+            }
+            if (!cells.length) return null;
+            return cells[Math.floor(Math.random() * cells.length)];
+        }
 
-            for(let r=0; r<ROWS; r++) {
-                for(let c=0; c<COLS; c++) {
-                    if(board[r][c] && board[r][c].yOffset < 0) {
-                        board[r][c].yOffset += deltaTime * 0.4;
-                        if (board[r][c].yOffset > 0) board[r][c].yOffset = 0;
+
+        function collapseBoardColumns() {
+            for (let c = 0; c < COLS; c++) {
+                const existing = [];
+                for (let r = ROWS - 1; r >= 0; r--) {
+                    if (board[r][c]) {
+                        existing.push({ block: board[r][c], fromRow: r });
                     }
                 }
-            }
 
-            if (clearAnimTimer > 0) {
-                clearAnimTimer -= deltaTime;
-                if (clearAnimTimer <= 0) {
-                    linesToClear.forEach(r => {
-                        board.splice(r, 1);
-                        board.unshift(Array(COLS).fill(null));
-                    });
-                    
-                    for(let r=0; r<ROWS; r++) {
-                        for(let c=0; c<COLS; c++) {
-                            if(board[r][c]) {
-                                let dropCount = linesToClear.filter(clearRow => clearRow > r).length;
-                                if (dropCount > 0) {
-                                    board[r][c].yOffset = -dropCount * BLOCK_SIZE;
-                                }
-                            }
-                        }
-                    }
-
-                    let linesCleared = linesToClear.length;
-                    lines += linesCleared;
-                    score += [0, 100, 300, 500, 800][linesCleared] * level;
-                    level = Math.floor(lines / 5) + 1; 
-                    dropInterval = Math.max(100, 1000 - (level - 1) * 100);
-                    updateScoreBoard();
-
-                    linesToClear = [];
-                    canHold = true;
-                    drawHoldAndNext();
-                    if (!isGameOver) spawnPiece();
+                for (let r = 0; r < ROWS; r++) {
+                    board[r][c] = null;
                 }
-                return;
-            }
 
-            // 爆弾タイマーの更新
-            bombSpawnTimer -= deltaTime;
-            if (bombSpawnTimer <= 0) {
-                nextIsBomb = true;
-                bombSpawnTimer = 20000; // 20秒ごとに爆弾フラグ
-                drawHoldAndNext();
+                existing.forEach((entry, index) => {
+                    const targetRow = ROWS - 1 - index;
+                    entry.block.yOffset = (entry.fromRow - targetRow) * BLOCK_SIZE;
+                    board[targetRow][c] = entry.block;
+                });
             }
+            sanitizeBoardState();
+        }
 
-            dropTimer += deltaTime;
-            if (dropTimer > dropInterval) {
-                if (!checkCollision(currentPiece.x, currentPiece.y + 1, currentPiece.shape)) {
-                    currentPiece.y++;
-                } else {
-                    lockPiece(currentPiece);
-                    if (!isGameOver) spawnPiece();
+        function startGarbagePhaseOrSpawn() {
+            drawHoldAndNext();
+            if (pendingGarbage > 0) {
+                setPhase(PHASES.GARBAGE);
+                while (pendingGarbage > 0) {
+                    const spawned = spawnGarbageBlock();
+                    pendingGarbage--;
+                    if (!spawned || isGameOver) return;
                 }
-                dropTimer = 0;
+            } else if (!isGameOver) {
+                spawnPiece();
             }
+        }
 
-            // ゴミブロックの落下
-            for (let i = fallingPieces.length - 1; i >= 0; i--) {
-                let npc = fallingPieces[i];
-                npc.fallTimer -= deltaTime;
-                if (npc.fallTimer <= 0) {
-                    npc.fallTimer = 50;
-                    if (!checkCollision(npc.x, npc.y + 1, npc.shape, i)) {
-                        npc.y++;
-                    } else {
-                        if (npc.y >= 0) {
-                            board[npc.y][npc.x] = { color: npc.color, isBomb: false, timeLeft: null };
-                            checkLines();
-                        }
-                        fallingPieces.splice(i, 1);
-                    }
+        function processLineClearEnd() {
+            const clearedRows = [...linesToClear].sort((a, b) => a - b);
+            clearedRows.forEach(r => {
+                board.splice(r, 1);
+                board.unshift(Array(COLS).fill(null));
+            });
+
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    if (!board[r][c]) continue;
+                    const dropCount = clearedRows.filter(clearRow => clearRow > r).length;
+                    if (dropCount > 0) board[r][c].yOffset = -dropCount * BLOCK_SIZE;
                 }
             }
 
-            // 盤面の時限爆弾の処理
-            let cellsToClear = new Set();
+            const linesCleared = clearedRows.length;
+            lines += linesCleared;
+            const prevLevel = level;
+            level = Math.floor(lines / LEVEL_LINE_STEP) + 1;
+            addScore('lineClear', linesCleared);
+            dropInterval = getDropIntervalForLevel();
+            if (level > prevLevel) {
+                se.levelUp();
+                queueNextPiece();
+            }
+
+            linesToClear = [];
+            clearAnimTimer = 0;
+            clearParticles();
+            canHold = true;
+            sanitizeBoardState();
+            refreshHud();
+            startGarbagePhaseOrSpawn();
+        }
+
+        function updateBombs(deltaTime) {
+            const cellsToClear = new Set();
             let didExplode = false;
 
             for (let r = 0; r < ROWS; r++) {
                 for (let c = 0; c < COLS; c++) {
-                    let block = board[r][c];
-                    if (block && block.isBomb) {
+                    const block = board[r][c];
+                    if (block && block.isBomb === true) {
                         block.timeLeft -= deltaTime;
                         if (block.timeLeft <= 0) {
-                            // 爆発：周囲1マスを巻き込む
                             for (let dr = -1; dr <= 1; dr++) {
                                 for (let dc = -1; dc <= 1; dc++) {
-                                    cellsToClear.add(`${r + dr},${c + dc}`);
+                                    const nr = r + dr;
+                                    const nc = c + dc;
+                                    if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) {
+                                        cellsToClear.add(`${nr},${nc}`);
+                                    }
                                 }
                             }
                             didExplode = true;
@@ -603,68 +843,190 @@
                 }
             }
 
-            if (didExplode) {
-                explosionFlash = 0.8;
-                shakeTimer = 500;
-                cellsToClear.forEach(pos => {
-                    let [r, c] = pos.split(',').map(Number);
-                    if (r >= 0 && r < ROWS && c >= 0 && c < COLS && board[r][c]) {
-                        createParticles(c * BLOCK_SIZE + BLOCK_SIZE / 2, r * BLOCK_SIZE + BLOCK_SIZE / 2, board[r][c].color, 20);
-                        board[r][c] = null;
-                        score += 50; 
-                    }
-                });
-                updateScoreBoard();
-                
-                // 爆発ペナルティ：ゴミブロックを2〜3個降らせる
-                let numGarbage = 2 + Math.floor(Math.random() * 2);
-                for (let i = 0; i < numGarbage; i++) {
-                    setTimeout(() => spawnGarbageBlock(), i * 300); // 少し時間差で
+            if (!didExplode) return;
+
+            explosionFlash = 0.8;
+            shakeTimer = 500;
+            se.explode();
+
+            let explosionCount = 0;
+            cellsToClear.forEach(pos => {
+                const [r, c] = pos.split(',').map(Number);
+                if (board[r][c]) {
+                    createParticles(c * BLOCK_SIZE + BLOCK_SIZE / 2, r * BLOCK_SIZE + BLOCK_SIZE / 2, board[r][c].color, 20);
+                    board[r][c] = null;
+                    explosionCount++;
                 }
+            });
+            if (explosionCount > 0) addScore('explosion', explosionCount);
+
+            const randomCell = randomBoardCell();
+            if (randomCell && board[randomCell.r][randomCell.c]) {
+                createParticles(randomCell.c * BLOCK_SIZE + BLOCK_SIZE / 2, randomCell.r * BLOCK_SIZE + BLOCK_SIZE / 2, board[randomCell.r][randomCell.c].color, 16);
+                board[randomCell.r][randomCell.c] = null;
             }
 
-            for (let i = particles.length - 1; i >= 0; i--) {
-                particles[i].update();
-                if (particles[i].life <= 0) {
-                    particles.splice(i, 1);
-                }
+            collapseBoardColumns();
+            pendingGarbage += BASE_GARBAGE_COUNT + Math.floor(Math.random() * 2);
+
+            if (!checkLines() && !currentPiece && clearAnimTimer <= 0 && fallingPieces.length === 0) {
+                startGarbagePhaseOrSpawn();
             }
         }
 
-        // 描画処理
+        function updateFallingGarbage(deltaTime) {
+            for (let i = fallingPieces.length - 1; i >= 0; i--) {
+                const npc = fallingPieces[i];
+                npc.fallTimer -= deltaTime;
+                if (npc.fallTimer > 0) continue;
+
+                npc.fallTimer = GARBAGE_FALL_INTERVAL;
+                if (!checkCollision(npc.x, npc.y + 1, npc.shape, i)) {
+                    npc.y++;
+                } else {
+                    if (npc.y < 0) {
+                        const fallbackRow = board[0][npc.x] === null ? 0 : -1;
+                        if (fallbackRow >= 0) {
+                            board[fallbackRow][npc.x] = createBoardBlock({ color: npc.color, isBomb: false });
+                            fallingPieces.splice(i, 1);
+                            sanitizeBoardState();
+                            checkLines();
+                            continue;
+                        }
+                        triggerGameOver('garbage topped out');
+                        return;
+                    }
+                    board[npc.y][npc.x] = createBoardBlock({ color: npc.color, isBomb: false });
+                    fallingPieces.splice(i, 1);
+                    sanitizeBoardState();
+                    checkLines();
+                }
+            }
+
+            if (fallingPieces.length === 0 && !isGameOver && clearAnimTimer <= 0) {
+                setPhase(PHASES.PLAYING);
+                spawnPiece();
+            }
+        }
+
+        function resetLockIfAirborne() {
+            if (currentPiece && canMovePieceDown(currentPiece)) {
+                lockTimer = 0;
+            }
+        }
+
+        function canAcceptPieceInput() {
+            return isPlaying
+                && !isGameOver
+                && currentPhase === PHASES.PLAYING
+                && clearAnimTimer <= 0
+                && fallingPieces.length === 0
+                && !!currentPiece;
+        }
+
+        function gameLoop(timestamp) {
+            if (!isPlaying) return;
+            let deltaTime = timestamp - lastTime;
+            lastTime = timestamp;
+            if (deltaTime > 100) deltaTime = 100;
+
+            update(deltaTime);
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function update(deltaTime) {
+            if (isGameOver) return;
+
+            updateParticles(deltaTime);
+
+            if (shakeTimer > 0) shakeTimer -= deltaTime;
+
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    if (board[r][c] && board[r][c].yOffset !== 0) {
+                        board[r][c].yOffset += deltaTime * 0.4;
+                        if (board[r][c].yOffset > 0) board[r][c].yOffset = 0;
+                    }
+                }
+            }
+
+            if (clearAnimTimer > 0) {
+                clearAnimTimer -= deltaTime;
+                if (clearAnimTimer <= 0) processLineClearEnd();
+                return;
+            }
+
+            updateBombs(deltaTime);
+            if (isGameOver) return;
+
+            if (currentPhase === PHASES.GARBAGE || fallingPieces.length > 0) {
+                updateFallingGarbage(deltaTime);
+                return;
+            }
+
+            if (!currentPiece) {
+                if (!isGameOver) spawnPiece();
+                return;
+            }
+
+            dropTimer += deltaTime;
+            if (dropTimer >= dropInterval) {
+                if (canMovePieceDown()) {
+                    currentPiece.y++;
+                    dropTimer = 0;
+                    lockTimer = 0;
+                } else {
+                    dropTimer = 0;
+                }
+            }
+
+            if (!canMovePieceDown()) {
+                lockTimer += deltaTime;
+                if (lockTimer >= LOCK_DELAY) {
+                    finalizeLock(currentPiece);
+                }
+            } else {
+                lockTimer = 0;
+            }
+        }
+
         function draw() {
             ctx.fillStyle = '#0a0a0a';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
+
             ctx.save();
             if (shakeTimer > 0) {
-                let magnitude = (shakeTimer / 500) * 8;
-                let dx = (Math.random() - 0.5) * magnitude;
-                let dy = (Math.random() - 0.5) * magnitude;
-                ctx.translate(dx, dy);
+                const magnitude = (shakeTimer / 500) * 8;
+                ctx.translate((Math.random() - 0.5) * magnitude, (Math.random() - 0.5) * magnitude);
             }
 
             ctx.strokeStyle = '#1f2937';
             ctx.lineWidth = 1;
-            for(let r=0; r<ROWS; r++) {
-                ctx.beginPath(); ctx.moveTo(0, r*BLOCK_SIZE); ctx.lineTo(canvas.width, r*BLOCK_SIZE); ctx.stroke();
+            for (let r = 0; r <= ROWS; r++) {
+                ctx.beginPath();
+                ctx.moveTo(0, r * BLOCK_SIZE);
+                ctx.lineTo(canvas.width, r * BLOCK_SIZE);
+                ctx.stroke();
             }
-            for(let c=0; c<COLS; c++) {
-                ctx.beginPath(); ctx.moveTo(c*BLOCK_SIZE, 0); ctx.lineTo(c*BLOCK_SIZE, canvas.height); ctx.stroke();
+            for (let c = 0; c <= COLS; c++) {
+                ctx.beginPath();
+                ctx.moveTo(c * BLOCK_SIZE, 0);
+                ctx.lineTo(c * BLOCK_SIZE, canvas.height);
+                ctx.stroke();
             }
 
-            // デッドラインの描画
-            ctx.strokeStyle = 'rgba(255, 0, 0, 0.6)';
-            ctx.lineWidth = 2;
-            ctx.setLineDash([8, 4]);
-            ctx.beginPath();
-            ctx.moveTo(0, 2 * BLOCK_SIZE);
-            ctx.lineTo(canvas.width, 2 * BLOCK_SIZE);
-            ctx.stroke();
-            ctx.setLineDash([]);
-            ctx.fillStyle = 'rgba(255, 50, 50, 0.8)';
-            ctx.font = '10px "Press Start 2P", monospace';
-            ctx.fillText('DEADLINE', canvas.width - 80, 2 * BLOCK_SIZE - 5);
+            const dangerRows = getDangerRowCount();
+            if (isDangerZoneOccupied()) {
+                ctx.fillStyle = 'rgba(255, 80, 80, 0.08)';
+                ctx.fillRect(0, 0, canvas.width, dangerRows * BLOCK_SIZE);
+                ctx.strokeStyle = 'rgba(255, 80, 80, 0.5)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(0, dangerRows * BLOCK_SIZE);
+                ctx.lineTo(canvas.width, dangerRows * BLOCK_SIZE);
+                ctx.stroke();
+            }
 
             for (let r = 0; r < ROWS; r++) {
                 for (let c = 0; c < COLS; c++) {
@@ -675,23 +1037,38 @@
             }
 
             if (currentPiece) {
+                drawGhostPiece(currentPiece);
                 drawPiece(currentPiece.x, currentPiece.y, currentPiece.shape, currentPiece.color, false, currentPiece.bombPos);
             }
 
-            for (let p of fallingPieces) {
-                drawPiece(p.x, p.y, p.shape, p.color, true);
-            }
-
-            for (let p of particles) {
-                p.draw(ctx);
-            }
+            for (const p of fallingPieces) drawPiece(p.x, p.y, p.shape, p.color, true);
+            for (const p of particles) p.draw(ctx);
 
             if (explosionFlash > 0) {
                 ctx.fillStyle = `rgba(255, 50, 50, ${explosionFlash})`;
                 ctx.fillRect(-10, -10, canvas.width + 20, canvas.height + 20);
-                explosionFlash -= 0.02;
+                explosionFlash = Math.max(0, explosionFlash - 0.03);
             }
-            
+
+            ctx.restore();
+        }
+
+        function drawGhostPiece(piece) {
+            const ghostY = getGhostY(piece);
+            if (ghostY === piece.y) return;
+            ctx.save();
+            ctx.globalAlpha = 0.20;
+            for (let r = 0; r < piece.shape.length; r++) {
+                for (let c = 0; c < piece.shape[r].length; c++) {
+                    if (!piece.shape[r][c]) continue;
+                    const x = (piece.x + c) * BLOCK_SIZE;
+                    const y = (ghostY + r) * BLOCK_SIZE;
+                    ctx.fillStyle = piece.color;
+                    ctx.fillRect(x + 3, y + 3, BLOCK_SIZE - 6, BLOCK_SIZE - 6);
+                    ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+                    ctx.strokeRect(x + 3, y + 3, BLOCK_SIZE - 6, BLOCK_SIZE - 6);
+                }
+            }
             ctx.restore();
         }
 
@@ -700,49 +1077,44 @@
             let py = y * BLOCK_SIZE + (yOffset || 0);
 
             if (isClearing) {
-                let blink = (Math.sin(Date.now() / 30) + 1) / 2;
+                const blink = (Math.sin(Date.now() / 30) + 1) / 2;
                 ctx.fillStyle = `rgba(255, 255, 255, ${blink + 0.5})`;
             } else if (isBomb && timeLeft !== null && timeLeft < 5000) {
-                // 爆発5秒前で激しく点滅と震え
                 px += (Math.random() - 0.5) * 4;
                 py += (Math.random() - 0.5) * 4;
-                let blink = (Math.sin(Date.now() / 50) + 1) / 2;
+                const blink = (Math.sin(Date.now() / 50) + 1) / 2;
                 ctx.fillStyle = `rgba(255, 100, 100, ${blink + 0.5})`;
             } else {
                 ctx.fillStyle = color;
             }
 
             ctx.fillRect(px, py, BLOCK_SIZE, BLOCK_SIZE);
-            
-            ctx.fillStyle = 'rgba(255,255,255,0.3)';
+            ctx.fillStyle = 'rgba(255,255,255,0.28)';
             ctx.fillRect(px, py, BLOCK_SIZE, 4);
             ctx.fillRect(px, py, 4, BLOCK_SIZE);
-            ctx.fillStyle = 'rgba(0,0,0,0.4)';
+            ctx.fillStyle = 'rgba(0,0,0,0.38)';
             ctx.fillRect(px, py + BLOCK_SIZE - 4, BLOCK_SIZE, 4);
             ctx.fillRect(px + BLOCK_SIZE - 4, py, 4, BLOCK_SIZE);
-            
             ctx.strokeStyle = '#000';
             ctx.lineWidth = 1;
             ctx.strokeRect(px, py, BLOCK_SIZE, BLOCK_SIZE);
 
             if (isBomb) {
-                // 爆弾マーク
                 ctx.fillStyle = 'red';
                 ctx.beginPath();
-                ctx.arc(px + BLOCK_SIZE/2, py + BLOCK_SIZE/2, BLOCK_SIZE/4, 0, Math.PI*2);
+                ctx.arc(px + BLOCK_SIZE / 2, py + BLOCK_SIZE / 2, BLOCK_SIZE / 4, 0, Math.PI * 2);
                 ctx.fill();
 
                 if (timeLeft !== null) {
-                    // カウントダウン表示
-                    let seconds = Math.ceil(timeLeft / 1000);
+                    const seconds = Math.ceil(timeLeft / 1000);
                     ctx.fillStyle = 'white';
                     ctx.font = '12px "Press Start 2P", monospace';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
-                    ctx.shadowColor = "black";
+                    ctx.shadowColor = 'black';
                     ctx.shadowBlur = 4;
-                    ctx.fillText(seconds, px + BLOCK_SIZE/2, py + BLOCK_SIZE/2 + 2);
-                    ctx.shadowBlur = 0; 
+                    ctx.fillText(seconds, px + BLOCK_SIZE / 2, py + BLOCK_SIZE / 2 + 2);
+                    ctx.shadowBlur = 0;
                 }
             }
         }
@@ -750,12 +1122,11 @@
         function drawPiece(px, py, shape, color, isGarbage = false, bombPos = null) {
             for (let r = 0; r < shape.length; r++) {
                 for (let c = 0; c < shape[r].length; c++) {
-                    if (shape[r][c]) {
-                        let actualY = py + r;
-                        if (actualY >= 0) {
-                            let isBomb = bombPos && bombPos.r === r && bombPos.c === c;
-                            drawBlock(px + c, actualY, color, isBomb);
-                        }
+                    if (!shape[r][c]) continue;
+                    const actualY = py + r;
+                    if (actualY >= 0) {
+                        const isBomb = bombPos && bombPos.r === r && bombPos.c === c;
+                        drawBlock(px + c, actualY, color, isBomb);
                     }
                 }
             }
@@ -769,7 +1140,7 @@
         function rotateMatrix(matrix) {
             const N = matrix.length;
             const M = matrix[0].length;
-            let result = Array.from({length: M}, () => Array(N).fill(0));
+            const result = Array.from({ length: M }, () => Array(N).fill(0));
             for (let r = 0; r < N; r++) {
                 for (let c = 0; c < M; c++) {
                     result[c][N - 1 - r] = matrix[r][c];
@@ -778,75 +1149,75 @@
             return result;
         }
 
-        // 操作系関数
         function moveLeft() {
-            if (!isPlaying || isGameOver || clearAnimTimer > 0) return;
+            if (!canAcceptPieceInput()) return;
             if (!checkCollision(currentPiece.x - 1, currentPiece.y, currentPiece.shape)) {
                 currentPiece.x--;
+                resetLockIfAirborne();
+                se.move();
             }
         }
 
         function moveRight() {
-            if (!isPlaying || isGameOver || clearAnimTimer > 0) return;
+            if (!canAcceptPieceInput()) return;
             if (!checkCollision(currentPiece.x + 1, currentPiece.y, currentPiece.shape)) {
                 currentPiece.x++;
+                resetLockIfAirborne();
+                se.move();
             }
         }
 
         function moveDown() {
-            if (!isPlaying || isGameOver || clearAnimTimer > 0) return;
+            if (!canAcceptPieceInput()) return;
             if (!checkCollision(currentPiece.x, currentPiece.y + 1, currentPiece.shape)) {
                 currentPiece.y++;
-                score += 1;
-                updateScoreBoard();
+                addScore('softDrop', 1);
+                dropTimer = 0;
+                lockTimer = 0;
+                se.softDrop();
             }
         }
 
         function rotatePiece() {
-            if (!isPlaying || isGameOver || clearAnimTimer > 0) return;
-            let oldShape = currentPiece.shape;
-            let rotated = rotateMatrix(currentPiece.shape);
-            
-            let success = false;
-            if (!checkCollision(currentPiece.x, currentPiece.y, rotated)) {
-                currentPiece.shape = rotated;
-                success = true;
-            } else if (!checkCollision(currentPiece.x - 1, currentPiece.y, rotated)) {
-                currentPiece.x--;
-                currentPiece.shape = rotated;
-                success = true;
-            } else if (!checkCollision(currentPiece.x + 1, currentPiece.y, rotated)) {
-                currentPiece.x++;
-                currentPiece.shape = rotated;
-                success = true;
-            }
+            if (!canAcceptPieceInput()) return;
+            const oldShape = currentPiece.shape;
+            const oldBombPos = currentPiece.bombPos ? { ...currentPiece.bombPos } : null;
+            const rotated = rotateMatrix(currentPiece.shape);
 
-            if (success && currentPiece.bombPos) {
-                let N = oldShape.length;
-                currentPiece.bombPos = {
-                    r: currentPiece.bombPos.c,
-                    c: N - 1 - currentPiece.bombPos.r
-                };
+            const tests = [0, -1, 1, -2, 2];
+            for (const offset of tests) {
+                if (!checkCollision(currentPiece.x + offset, currentPiece.y, rotated)) {
+                    currentPiece.x += offset;
+                    currentPiece.shape = rotated;
+                    if (oldBombPos) {
+                        const oldRows = oldShape.length;
+                        currentPiece.bombPos = { r: oldBombPos.c, c: oldRows - 1 - oldBombPos.r };
+                    }
+                    resetLockIfAirborne();
+                    se.rotate();
+                    return;
+                }
             }
         }
 
         function hardDrop() {
-            if (!isPlaying || isGameOver || clearAnimTimer > 0) return;
+            if (!canAcceptPieceInput()) return;
             let dropDistance = 0;
             while (!checkCollision(currentPiece.x, currentPiece.y + 1, currentPiece.shape)) {
                 currentPiece.y++;
                 dropDistance++;
             }
-            score += dropDistance * 2;
-            updateScoreBoard();
-            
-            createParticles(currentPiece.x * BLOCK_SIZE + (currentPiece.shape[0].length * BLOCK_SIZE)/2, currentPiece.y * BLOCK_SIZE + BLOCK_SIZE, '#ffffff', 5);
-
-            lockPiece(currentPiece);
-            dropTimer = 0;
+            if (dropDistance > 0) addScore('hardDrop', dropDistance);
+            createParticles(
+                currentPiece.x * BLOCK_SIZE + (currentPiece.shape[0].length * BLOCK_SIZE) / 2,
+                currentPiece.y * BLOCK_SIZE + BLOCK_SIZE,
+                '#ffffff',
+                5
+            );
+            se.hardDrop();
+            finalizeLock(currentPiece);
         }
 
-        // === キャンバスへの直接タッチ操作 ===
         let initialTouchX = 0;
         let initialTouchY = 0;
         let lastTouchX = 0;
@@ -855,7 +1226,8 @@
         let touchStartTime = 0;
 
         canvas.addEventListener('touchstart', (e) => {
-            e.preventDefault(); 
+            e.preventDefault();
+            ensureAudio();
             if (!isPlaying || isGameOver || clearAnimTimer > 0) return;
 
             if (e.touches.length >= 2) {
@@ -874,33 +1246,28 @@
 
         canvas.addEventListener('touchmove', (e) => {
             e.preventDefault();
-            if (!isPlaying || isGameOver || clearAnimTimer > 0 || e.touches.length >= 2) return;
-            
-            let currentX = e.touches[0].clientX;
-            let currentY = e.touches[0].clientY;
-            
-            let dx = currentX - lastTouchX;
-            let dy = currentY - lastTouchY;
-            
-            const thresholdX = 25; // 横移動の感度
-            const thresholdY = 30; // 縦（下）移動の感度
-            
-            // 左右スワイプ
+            if (!canAcceptPieceInput() || e.touches.length >= 2) return;
+
+            const currentX = e.touches[0].clientX;
+            const currentY = e.touches[0].clientY;
+            const dx = currentX - lastTouchX;
+            const dy = currentY - lastTouchY;
+            const thresholdX = 24;
+            const thresholdY = 28;
+
             if (Math.abs(dx) > thresholdX) {
                 if (dx > 0) moveRight();
                 else moveLeft();
-                lastTouchX = currentX; // 基準点を更新して連続スワイプに対応
+                lastTouchX = currentX;
                 touchMoved = true;
             }
-            
-            // 下スワイプ（ソフトドロップ）
+
             if (dy > thresholdY) {
                 moveDown();
                 lastTouchY = currentY;
                 touchMoved = true;
             }
 
-            // 上方向への移動は基準点だけ更新しておく（ハードドロップ判定用）
             if (dy < -thresholdY) {
                 lastTouchY = currentY;
                 touchMoved = true;
@@ -910,26 +1277,24 @@
         canvas.addEventListener('touchend', (e) => {
             e.preventDefault();
             if (!isPlaying || isGameOver) return;
-            
-            let dt = Date.now() - touchStartTime;
-            let dx = lastTouchX - initialTouchX;
-            let dy = lastTouchY - initialTouchY;
-            
-            // フリック（上方向への素早いスワイプ。横ズレより縦ズレが大きい場合のみ）
+
+            const dt = Date.now() - touchStartTime;
+            const dx = lastTouchX - initialTouchX;
+            const dy = lastTouchY - initialTouchY;
+
             if (dy < -40 && Math.abs(dy) > Math.abs(dx) && dt < 400) {
                 hardDrop();
                 return;
             }
-            
-            // タップ（ほとんど指が動いていない場合）
+
             if (!touchMoved || (Math.abs(dx) < 10 && Math.abs(dy) < 10)) {
                 rotatePiece();
             }
         }, { passive: false });
 
-        // === キーボード操作 ===
         document.addEventListener('keydown', (e) => {
-            switch(e.key) {
+            ensureAudio();
+            switch (e.key) {
                 case 'ArrowLeft': moveLeft(); break;
                 case 'ArrowRight': moveRight(); break;
                 case 'ArrowDown': moveDown(); break;
@@ -939,22 +1304,24 @@
             }
         });
 
-        // === モバイル補助ボタン等 ===
-        document.getElementById('holdCanvas').addEventListener('click', holdPiece);
-        document.getElementById('btnHold').addEventListener('pointerdown', (e) => { e.preventDefault(); holdPiece(); });
-        document.getElementById('btnLeft').addEventListener('pointerdown', (e) => { e.preventDefault(); moveLeft(); });
-        document.getElementById('btnRight').addEventListener('pointerdown', (e) => { e.preventDefault(); moveRight(); });
-        document.getElementById('btnDown').addEventListener('pointerdown', (e) => { e.preventDefault(); moveDown(); });
-        document.getElementById('btnRotate').addEventListener('pointerdown', (e) => { e.preventDefault(); rotatePiece(); });
-        document.getElementById('btnDrop').addEventListener('pointerdown', (e) => { e.preventDefault(); hardDrop(); });
+        holdCanvas.addEventListener('click', () => { ensureAudio(); holdPiece(); });
+        document.getElementById('btnHold').addEventListener('pointerdown', (e) => { e.preventDefault(); ensureAudio(); holdPiece(); });
+        document.getElementById('btnLeft').addEventListener('pointerdown', (e) => { e.preventDefault(); ensureAudio(); moveLeft(); });
+        document.getElementById('btnRight').addEventListener('pointerdown', (e) => { e.preventDefault(); ensureAudio(); moveRight(); });
+        document.getElementById('btnDown').addEventListener('pointerdown', (e) => { e.preventDefault(); ensureAudio(); moveDown(); });
+        document.getElementById('btnRotate').addEventListener('pointerdown', (e) => { e.preventDefault(); ensureAudio(); rotatePiece(); });
+        document.getElementById('btnDrop').addEventListener('pointerdown', (e) => { e.preventDefault(); ensureAudio(); hardDrop(); });
+        document.getElementById('btnStart').addEventListener('click', () => { ensureAudio(); startGame(); });
+        document.getElementById('btnRestart').addEventListener('click', () => { ensureAudio(); startGame(); });
 
-        document.getElementById('btnStart').addEventListener('click', startGame);
-        document.getElementById('btnRestart').addEventListener('click', startGame);
+        function bootstrap() {
+            initBoard();
+            queueNextPiece();
+            refreshHud();
+            draw();
+        }
 
-        initBoard();
-        drawHoldAndNext();
-        draw();
-
+        bootstrap();
     </script>
 </body>
 </html>
