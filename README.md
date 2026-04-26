@@ -1,187 +1,65 @@
-# 💣 Explosion Tetris
+# 💣 Explosion Tetris: UCD-F Core Simulation
+**The Chaos Evolution of Constrained Dynamics**
 
-爆弾×テトリスのカオス進化系。
-「置くか、爆発するか。」
-
-ブラウザで遊べる、**爆弾付きテトリスゲーム**です。
+Explosion Tetris is not just a puzzle game; it is a high-performance, deterministic state transition simulation built on the **Universal Constrained Dynamics Framework (UCD-F)**. It takes the classic falling-block formula and injects volatile mechanics driven by environment-harvested entropy.
 
 ---
 
-## 🎮 ゲーム概要
+## 🏗 System Architecture (UCD-F Spec)
 
-Explosion Tetris は、通常のテトリスに以下の要素を追加したゲームです：
+This simulation is engineered with extreme performance constraints in mind, utilizing:
 
-* 💣 **爆弾ブロック**
-* ⚠️ **危険度（DANGER）システム**
-* 🔥 **フィーバー（FEVER）モード**
-* 💥 **爆発による盤面破壊**
-* 🎯 **ジャスト解除（Just Disarm）ボーナス**
-
-> 爆弾を放置すると周囲が吹き飛び、さらに盤面のどこか1マスも消滅します。
+* **Bit-Packed SoA (Structure of Arrays):** The entire game board is managed within a single `Uint32Array`. Every block's state—color, explosive fuse, clearing flags, and spatial offsets—is packed into a 32-bit integer to ensure zero-allocation during the core logic loop.
+* **Deterministic Fixed-Point Arithmetic:** All physics and particle cloud dynamics utilize 16.16 fixed-point math, eliminating floating-point non-determinism across different hardware architectures.
+* **Entropy Harvesting:** Device noise and user input are dynamic-normalized and internalized as system entropy (E2/E3), directly influencing bomb spawn rates and fatigue levels.
+* **Local Time Dilation:** Resource allocation is dynamically adjusted via the **FEVER System**, inducing a temporal slowdown that allows for higher-precision maneuvers under high fatigue (DANGER) states.
 
 ---
 
-## 🕹 操作方法
+## 💣 Core Dynamics
 
-### PC
+### ■ Bomb Entities & Half-Life
+Select tetrominos spawn with live explosives. These entities have a fixed half-life (10s default / 5s in Critical state). Failure to disarm through line-clearing results in a kinetic explosion, destroying localized blocks and generating high-intensity "E3 Noise" (Garbage Blocks).
 
-| 操作      | キー    |
-| ------- | ----- |
-| 左移動     | ←     |
-| 右移動     | →     |
-| 回転      | ↑     |
-| ソフトドロップ | ↓     |
-| ハードドロップ | Space |
-| ホールド    | Shift |
-| 一時停止    | P     |
-| 設定      | O     |
+### ■ VIF Dynamics (Velocity / Intensity / Fatigue)
+* **Velocity:** Base drop speed increases as the level scales.
+* **Intensity:** Scoring and visual feedback scale with your current **COMBO (REN)** chain.
+* **Fatigue (DANGER):** Failed disarms and explosions accumulate fatigue. High fatigue leads to **ZERO-LOCK** (System Collapse / Game Over).
+
+### ■ Mega Disarm / Total Evacuation
+Clearing a bomb at its critical limit (1 second or less) triggers a **Mega Disarm**, performing a total evacuation of all active entities on the board for a massive score bonus.
 
 ---
 
-### スマホ / タッチ操作
+## 🕹 Interface & Controls
 
-* タップ：回転
-* 左右スワイプ：移動
-* 下スワイプ：ソフトドロップ
-* 上フリック：ハードドロップ
-* 2本指タップ or HOLDボタン：ホールド
+### PC Navigation
+| Action | Default Keybind |
+| :--- | :--- |
+| Move Left/Right | `←` / `→` |
+| Rotate (CW) | `↑` |
+| Soft Drop | `↓` (Hold for Fast Drop) |
+| Hard Drop | `Space` (with Kinetic Impact) |
+| Hold Piece | `Shift` |
+| Suspend/Pause | `P` |
+| Configure Params | `O` |
 
----
-
-## 💣 ゲームシステム
-
-### ■ 爆弾ブロック
-
-* 一部のミノに爆弾が含まれる
-* 時間制限あり（通常10秒 / 危険時5秒）
-* 爆発すると：
-
-  * 周囲のブロックを破壊
-  * 盤面のランダム1マスも消滅
-
----
-
-### ⚠️ DANGER（危険度）
-
-* 爆発などで蓄積
-* 一定値で「ステージ上昇」
-* 効果：
-
-  * 爆弾出現率アップ
-  * お邪魔ブロック増加
-  * 難易度上昇
+### Mobile / Touch Interface
+* **Tap:** Rotate Entity
+* **Swipe Horizontal:** Translate Entity
+* **Swipe Down:** Initiate Soft Drop
+* **Flick Up:** Trigger Hard Drop
+* **Two-Finger Tap:** Hold Entity
 
 ---
 
-### 🔥 FEVERモード
-
-条件：
-
-* ジャスト解除を連続成功
-
-効果：
-
-* スコア倍率 ×2
-* 爆弾出現率低下
-* お邪魔軽減
+## 🛠 Environmental Parameters
+The simulation parameters—including **SE Volume**, **Drone Synth BGM**, **Lock Delay**, and **Difficulty (VIF Scaling)**—can be adjusted in the `UCD-F PARAMS` console. All configurations and high-entropy states are persisted via local storage.
 
 ---
 
-### 🎯 Just Disarm（ジャスト解除）
+## 🧬 Development "Vibe"
+Created through high-velocity **Vibe Coding**. Powered by the Gemini Canvas & HTML5 Canvas API. Designed for high-stakes, high-octane cognitive engagement.
 
-* 爆発直前の爆弾をライン消去すると発動
-* 大量スコアボーナス
-* FEVERゲージ上昇
-
----
-
-### 💥 MEGA DISARM
-
-* ギリギリ（約1秒以内）で解除
-* 特別ボーナス + スローモーション演出
-
----
-
-## ⚙️ 設定
-
-ゲーム内設定で以下を変更可能：
-
-* SE音量
-* BGM音量
-* BGM ON/OFF
-* 難易度
-
-  * EASY / NORMAL / HARD / CHAOS
-* ロックディレイ
-* スワイプ感度
-* 危険エリア表示
-* キーコンフィグ
-
----
-
-## 🧠 難易度
-
-| 難易度    | 特徴           |
-| ------ | ------------ |
-| EASY   | 落下遅い / 爆弾少ない |
-| NORMAL | 標準           |
-| HARD   | 速い / 爆弾多い    |
-| CHAOS  | 非常に危険        |
-
----
-
-## 💾 セーブ機能
-
-* ハイスコア保存（localStorage）
-* 設定保存
-
----
-
-## 🚀 起動方法
-
-### 1. ファイルを開く
-
-```bash
-index.html をブラウザで開く
-```
-
-または
-
-### 2. ローカルサーバー（推奨）
-
-```bash
-npx serve
-```
-
----
-
-## 🛠 技術構成
-
-* HTML5 Canvas
-* Vanilla JavaScript
-* Tailwind CSS
-* Web Audio API（効果音・BGM）
-
----
-
-## 📸 特徴まとめ
-
-* 爆発で盤面が崩れる「攻撃的テトリス」
-* スキル要素（ジャスト解除）
-* 状況が加速する「危険度システム」
-* 一発逆転のFEVERモード
-
----
-
-## 📜 ライセンス
-
-自由に改変・利用OK（必要なら追記してください）
-
----
-
-## ✨ 今後のアイデア
-
-* オンライン対戦
-* リプレイ機能
-* ランキング
-* スキン変更
+**INITIATE UCD-F SYSTEM?**
+[ CONNECT ]
