@@ -158,6 +158,7 @@
                 <p class="text-gray-300 mb-2 font-mono">HIGH SCORE: <span id="finalHighScore" class="text-yellow-300 font-bold text-xl">0</span></p>
                 <p id="gameOverReason" class="text-[11px] sm:text-xs text-red-200/90 bg-red-950/40 border border-red-800 rounded-lg px-3 py-2 mb-6 max-w-[240px] text-center leading-relaxed">TOP OUT</p>
                 <button id="btnRestart" class="bg-blue-600 hover:bg-blue-500 text-white font-arcade py-3 px-6 rounded-xl shadow-[0_0_15px_rgba(0,100,255,0.4)] transition-all">REBOOT</button>
+                <div class="mt-4 text-[9px] text-gray-400 small-arcade animate-pulse text-center leading-relaxed">HOLD [E-REV] KEY TO<br>REVERSE ENTROPY</div>
             </div>
 
             <div id="pauseOverlay" class="absolute inset-0 bg-black/70 flex flex-col items-center justify-center rounded-xl z-20 hidden">
@@ -224,8 +225,8 @@
                             <button data-keybind-action="rotate" class="keybind-btn hud-card px-3 py-2 text-left hover:bg-gray-800 transition-colors">ROTATE: <span class="text-yellow-300 float-right">↑</span></button>
                             <button data-keybind-action="drop" class="keybind-btn hud-card px-3 py-2 text-left hover:bg-gray-800 transition-colors">DROP: <span class="text-yellow-300 float-right">SPACE</span></button>
                             <button data-keybind-action="hold" class="keybind-btn hud-card px-3 py-2 text-left hover:bg-gray-800 transition-colors">HOLD: <span class="text-yellow-300 float-right">SHIFT</span></button>
+                            <button data-keybind-action="rewind" class="keybind-btn hud-card px-3 py-2 text-left hover:bg-gray-800 transition-colors border-purple-800">E-REV: <span class="text-purple-300 float-right">Z</span></button>
                             <button data-keybind-action="pause" class="keybind-btn hud-card px-3 py-2 text-left hover:bg-gray-800 transition-colors">PAUSE: <span class="text-yellow-300 float-right">P</span></button>
-                            <button data-keybind-action="settings" class="keybind-btn hud-card px-3 py-2 text-left hover:bg-gray-800 transition-colors">CONFIG: <span class="text-yellow-300 float-right">O</span></button>
                         </div>
                         <div class="mt-3 flex justify-between items-center gap-3 bg-gray-900/50 p-2 rounded">
                             <div id="keybindHint" class="text-[10px] text-gray-400">変更したいボタンをクリックしてキー入力</div>
@@ -237,13 +238,15 @@
         </div>
 
         <!-- MOBILE BUTTONS -->
-        <div class="w-full max-w-[540px] grid grid-cols-4 gap-2 md:hidden opacity-80">
-            <button id="btnHold" class="bg-blue-900 border border-blue-700 p-3 rounded-xl text-xs font-arcade active:bg-blue-800 transition-colors">HOLD</button>
-            <button id="btnLeft" class="bg-gray-800 border border-gray-700 p-3 rounded-xl text-2xl active:bg-gray-700 transition-colors">⬅️</button>
-            <button id="btnRight" class="bg-gray-800 border border-gray-700 p-3 rounded-xl text-2xl active:bg-gray-700 transition-colors">➡️</button>
-            <button id="btnRotate" class="bg-gray-800 border border-gray-700 p-3 rounded-xl text-2xl active:bg-gray-700 transition-colors">🔄</button>
-            <button id="btnDown" class="bg-gray-800 border border-gray-700 p-3 rounded-xl text-2xl active:bg-gray-700 col-span-2 transition-colors">⬇️</button>
-            <button id="btnDrop" class="bg-red-900 border border-red-700 p-3 rounded-xl text-xl font-arcade col-span-2 active:bg-red-800 transition-colors">DROP</button>
+        <div class="w-full max-w-[540px] grid grid-cols-5 gap-2 md:hidden opacity-80">
+            <button id="btnHold" class="bg-blue-900 border border-blue-700 p-2 rounded-xl text-[10px] font-arcade active:bg-blue-800 transition-colors flex items-center justify-center">HOLD</button>
+            <button id="btnLeft" class="bg-gray-800 border border-gray-700 p-2 rounded-xl text-xl active:bg-gray-700 transition-colors flex items-center justify-center">⬅️</button>
+            <button id="btnRight" class="bg-gray-800 border border-gray-700 p-2 rounded-xl text-xl active:bg-gray-700 transition-colors flex items-center justify-center">➡️</button>
+            <button id="btnRotate" class="bg-gray-800 border border-gray-700 p-2 rounded-xl text-xl active:bg-gray-700 transition-colors flex items-center justify-center">🔄</button>
+            <button id="btnRewind" class="bg-purple-900 border border-purple-700 p-2 rounded-xl text-[10px] font-arcade active:bg-purple-800 transition-colors flex items-center justify-center text-purple-200">E-REV</button>
+            
+            <button id="btnDown" class="bg-gray-800 border border-gray-700 p-3 rounded-xl text-2xl active:bg-gray-700 col-span-2 transition-colors flex items-center justify-center">⬇️</button>
+            <button id="btnDrop" class="bg-red-900 border border-red-700 p-3 rounded-xl text-xl font-arcade col-span-3 active:bg-red-800 transition-colors flex items-center justify-center tracking-widest">DROP</button>
         </div>
     </div>
 
@@ -254,7 +257,7 @@
         const DEFAULT_SETTINGS = {
             seVolume: 0.75, bgmVolume: 0.4, bgmEnabled: true, difficulty: 'normal',
             lockDelay: 450, swipeSensitivity: 24, showDangerZone: true,
-            keybinds: { left: 'ArrowLeft', right: 'ArrowRight', down: 'ArrowDown', rotate: 'ArrowUp', drop: 'Space', hold: 'ShiftLeft', pause: 'KeyP', settings: 'KeyO' }
+            keybinds: { left: 'ArrowLeft', right: 'ArrowRight', down: 'ArrowDown', rotate: 'ArrowUp', drop: 'Space', hold: 'ShiftLeft', pause: 'KeyP', settings: 'KeyO', rewind: 'KeyZ' }
         };
         let settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
         let highScore = 0;
@@ -303,8 +306,10 @@
 
             document.querySelectorAll('.keybind-btn').forEach(btn => {
                 const action = btn.dataset.keybindAction;
+                if (!action) return;
                 const key = settings.keybinds[action];
-                btn.innerHTML = `${action.toUpperCase()}: <span class="text-yellow-300 float-right">${formatKeyName(key)}</span>`;
+                const isRewind = action === 'rewind';
+                btn.innerHTML = `${action.toUpperCase()}: <span class="${isRewind ? 'text-purple-300' : 'text-yellow-300'} float-right">${formatKeyName(key)}</span>`;
                 btn.classList.toggle('capturing-key', isCapturingKey === action);
             });
         }
@@ -335,9 +340,7 @@
         // ==========================================
         // 1.5. AUDIO SYNTH
         // ==========================================
-        let audioCtx = null;
-        let audioUnlocked = false;
-        let bgmOsc = null, bgmGain = null, bgmLfo = null;
+        let audioCtx = null, audioUnlocked = false, bgmOsc = null, bgmGain = null, bgmLfo = null;
 
         function ensureAudio() {
             if (!audioCtx) {
@@ -346,17 +349,14 @@
                 audioCtx = new AudioContextClass();
             }
             if (audioCtx.state === 'suspended') audioCtx.resume();
-            audioUnlocked = true;
-            updateBgm();
+            audioUnlocked = true; updateBgm();
         }
 
         function playTone({ type = 'square', frequency = 440, duration = 0.06, volume = 0.03, slideTo = null, startAt = 0 }) {
             if (!audioUnlocked || !audioCtx || settings.seVolume <= 0) return;
             const now = audioCtx.currentTime + startAt;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = type;
-            osc.frequency.setValueAtTime(frequency, now);
+            const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+            osc.type = type; osc.frequency.setValueAtTime(frequency, now);
             if (slideTo !== null) osc.frequency.linearRampToValueAtTime(slideTo, now + duration);
             gain.gain.setValueAtTime(0.0001, now);
             gain.gain.exponentialRampToValueAtTime(Math.max(0.0001, volume * settings.seVolume), now + Math.min(0.01, duration / 3));
@@ -377,35 +377,31 @@
             clear() {
                 playTone({ type: 'square', frequency: 620, duration: 0.06, volume: 0.025, slideTo: 780, startAt: 0 });
                 playTone({ type: 'square', frequency: 780, duration: 0.07, volume: 0.022, slideTo: 960, startAt: 0.04 });
+            },
+            rewind() {
+                if(harvestEntropy() < 0.25) playTone({ type: 'sawtooth', frequency: 600 + harvestEntropy()*400, duration: 0.04, volume: 0.012, slideTo: 300 });
             }
         };
 
         function updateBgm() {
             if (!audioCtx || !audioUnlocked) return;
-            if (!settings.bgmEnabled || (!isPlaying && currentPhase !== PHASES.READY && currentPhase !== PHASES.GAME_OVER) || isPaused) {
+            if (!settings.bgmEnabled || (!isPlaying && currentPhase !== PHASES.READY && currentPhase !== PHASES.GAME_OVER) || isPaused || isRewinding) {
                 if (bgmGain) bgmGain.gain.setTargetAtTime(0.0001, audioCtx.currentTime, 0.1);
                 return;
             }
-            
             if (!bgmOsc) {
                 bgmOsc = audioCtx.createOscillator(); bgmOsc.type = 'sawtooth';
                 bgmGain = audioCtx.createGain(); bgmGain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
                 const filter = audioCtx.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.value = 400;
                 bgmLfo = audioCtx.createOscillator(); bgmLfo.type = 'sine'; bgmLfo.frequency.value = 0.5;
                 const lfoGain = audioCtx.createGain(); lfoGain.gain.value = 5;
-                
                 bgmLfo.connect(lfoGain); lfoGain.connect(bgmOsc.frequency);
                 bgmOsc.connect(filter); filter.connect(bgmGain); bgmGain.connect(audioCtx.destination);
-                
                 bgmOsc.start(); bgmLfo.start();
             }
-            
             if (bgmGain) {
-                const targetVol = settings.bgmVolume * 0.06; 
-                bgmGain.gain.setTargetAtTime(Math.max(0.0001, targetVol), audioCtx.currentTime, 0.5);
-                const baseFreq = feverTimer > 0 ? 80 : 110;
-                const dangerPitch = dangerCount * 3;
-                bgmOsc.frequency.setTargetAtTime(baseFreq + dangerPitch, audioCtx.currentTime, 1.0);
+                bgmGain.gain.setTargetAtTime(Math.max(0.0001, settings.bgmVolume * 0.06), audioCtx.currentTime, 0.5);
+                bgmOsc.frequency.setTargetAtTime((feverTimer > 0 ? 80 : 110) + dangerCount * 3, audioCtx.currentTime, 1.0);
                 bgmLfo.frequency.setTargetAtTime(feverTimer > 0 ? 4 : 0.5 + (dangerCount * 0.1), audioCtx.currentTime, 1.0);
             }
         }
@@ -435,8 +431,7 @@
             const dtFp = floatToFp(deltaTime / 16.67), dtRawFp = floatToFp(deltaTime), frictionFp = floatToFp(0.96);
             let aliveCount = 0;
             for (let p = 0; p < particleCount; p++) {
-                const i = p * 7;
-                let age = particleData[i+6] + dtRawFp;
+                const i = p * 7; let age = particleData[i+6] + dtRawFp;
                 if (age >= particleData[i+5]) continue;
                 let vx = particleData[i+2], vy = particleData[i+3];
                 particleData[i] += mulFp(vx, dtFp); particleData[i+1] += mulFp(vy, dtFp);
@@ -459,40 +454,25 @@
         }
         function clearParticles() { particleCount = 0; }
 
-        // ==========================================
-        // 2.5 FLOATING TEXTS & VISUAL FX
-        // ==========================================
         let floatingTexts = [];
-        function addFloatingText(x, y, text, color) {
-            floatingTexts.push({ x, y, text, color, life: 1.0, vy: -0.6 });
-        }
-
+        function addFloatingText(x, y, text, color) { floatingTexts.push({ x, y, text, color, life: 1.0, vy: -0.6 }); }
         function updateFloatingTexts(deltaTime) {
             for(let i = floatingTexts.length - 1; i >= 0; i--) {
-                let ft = floatingTexts[i];
-                ft.y += ft.vy * (deltaTime / 16.6);
-                ft.life -= (deltaTime / 16.6) * 0.025;
+                let ft = floatingTexts[i]; ft.y += ft.vy * (deltaTime / 16.6); ft.life -= (deltaTime / 16.6) * 0.025;
                 if(ft.life <= 0) floatingTexts.splice(i, 1);
             }
         }
-
         function drawFloatingTexts(ctx) {
             for(let ft of floatingTexts) {
-                ctx.globalAlpha = Math.max(0, ft.life);
-                ctx.fillStyle = ft.color;
-                ctx.font = '10px "Press Start 2P"';
-                ctx.textAlign = 'center';
-                ctx.fillText(ft.text, ft.x, ft.y);
+                ctx.globalAlpha = Math.max(0, ft.life); ctx.fillStyle = ft.color;
+                ctx.font = '10px "Press Start 2P"'; ctx.textAlign = 'center'; ctx.fillText(ft.text, ft.x, ft.y);
             }
             ctx.globalAlpha = 1.0;
         }
 
         let hardDropTrail = null;
         function updateTrail(deltaTime) {
-            if (hardDropTrail) {
-                hardDropTrail.life -= (deltaTime / 16.6) * 0.08;
-                if (hardDropTrail.life <= 0) hardDropTrail = null;
-            }
+            if (hardDropTrail) { hardDropTrail.life -= (deltaTime / 16.6) * 0.08; if (hardDropTrail.life <= 0) hardDropTrail = null; }
         }
 
         // ==========================================
@@ -502,9 +482,8 @@
         const COLS = 10, ROWS = 20, BLOCK_SIZE = 30;
         const COLOR_PALETTE = [null, '#00ffff', '#2563eb', '#f97316', '#eab308', '#22c55e', '#a855f7', '#ef4444', '#6b7280', '#ffaa00'];
         const TETROMINOS = {
-            I: { shape: [[1,1,1,1]], colorIdx: 1 }, J: { shape: [[1,0,0],[1,1,1]], colorIdx: 2 },
-            L: { shape: [[0,0,1],[1,1,1]], colorIdx: 3 }, O: { shape: [[1,1],[1,1]], colorIdx: 4 },
-            S: { shape: [[0,1,1],[1,1,0]], colorIdx: 5 }, T: { shape: [[0,1,0],[1,1,1]], colorIdx: 6 },
+            I: { shape: [[1,1,1,1]], colorIdx: 1 }, J: { shape: [[1,0,0],[1,1,1]], colorIdx: 2 }, L: { shape: [[0,0,1],[1,1,1]], colorIdx: 3 },
+            O: { shape: [[1,1],[1,1]], colorIdx: 4 }, S: { shape: [[0,1,1],[1,1,0]], colorIdx: 5 }, T: { shape: [[0,1,0],[1,1,1]], colorIdx: 6 },
             Z: { shape: [[1,1,0],[0,1,1]], colorIdx: 7 }
         };
         const KEYS = Object.keys(TETROMINOS);
@@ -532,7 +511,7 @@
         }
 
         // ==========================================
-        // 4. GAME VARIABLES & UCD-F LOGIC
+        // 4. GAME VARIABLES, TIME REVERSAL & UCD-F LOGIC
         // ==========================================
         let currentPiece = null, fallingPieces = [], pendingGarbage = 0;
         let score = 0, level = 1, lines = 0;
@@ -543,9 +522,12 @@
         let explosionFlash = 0, clearAnimTimer = 0, linesToClear = [], shakeTimer = 0;
         let dangerCount = 0, totalExplodedBombs = 0, feverTimer = 0, justDisarmChain = 0, pendingJustDisarms = 0;
         let eventBannerTimer = 0, pendingMegaClear = false, megaBonusTimer = 0;
+        let combo = 0, isSoftDropping = false;
         
-        let combo = 0; // REN Counter
-        let isSoftDropping = false;
+        // ENTROPY REVERSAL (Rewind System)
+        const HISTORY_MAX_FRAMES = 300; // Approx 5 seconds at 60fps
+        let stateHistory = [];
+        let isRewinding = false;
 
         const scoreDisplay = document.getElementById('scoreDisplay'), levelDisplay = document.getElementById('levelDisplay');
         const holdCtx = document.getElementById('holdCanvas').getContext('2d'), nextCtx = document.getElementById('nextCanvas').getContext('2d');
@@ -554,15 +536,10 @@
         const feverDisplay = document.getElementById('feverDisplay'), feverComboDisplay = document.getElementById('feverComboDisplay'), feverBar = document.getElementById('feverBar');
         const eventBanner = document.getElementById('eventBanner'), megaBonusOverlay = document.getElementById('megaBonusOverlay'), megaBonusScore = document.getElementById('megaBonusScore');
         
-        function getBombChanceForLevel() {
-            let base = 0.20 + (level - 1) * 0.05 + totalExplodedBombs * 0.10;
-            return Math.min(0.95, Math.max(0.01, base + getDifficultyPreset().bombChanceOffset));
-        }
+        function getBombChanceForLevel() { return Math.min(0.95, Math.max(0.01, 0.20 + (level - 1) * 0.05 + totalExplodedBombs * 0.10 + getDifficultyPreset().bombChanceOffset)); }
         function isShortFuseActive() { return getBombChanceForLevel() > 0.50; }
         function getBombTimeMs() { return isShortFuseActive() ? 5000 : 10000; }
         function getExplosionSpeedPenaltyMs() { return Math.min(360, totalExplodedBombs * 1); }
-        
-        // Time Dilation applied here
         function getDropIntervalForLevel() {
             let base = 950 - (level - 1) * 75 - getExplosionSpeedPenaltyMs();
             let interval = Math.max(80, base + getDifficultyPreset().dropOffset);
@@ -572,32 +549,19 @@
 
         function addScore(amount, showFloating = false, gridX = COLS/2, gridY = ROWS/2) {
             score += amount;
-            if (score > highScore) {
-                highScore = score;
-                document.getElementById('highScoreDisplay').innerText = highScore;
-                document.getElementById('finalHighScore').innerText = highScore;
-                saveData();
-            }
-            if (showFloating && amount > 0) {
-                // Ensure text is spawned around center if requested
-                const px = gridX * BLOCK_SIZE + (BLOCK_SIZE/2);
-                const py = gridY * BLOCK_SIZE;
-                addFloatingText(px, py, `+${amount}`, '#4ade80');
-            }
+            if (score > highScore) { highScore = score; document.getElementById('highScoreDisplay').innerText = highScore; document.getElementById('finalHighScore').innerText = highScore; saveData(); }
+            if (showFloating && amount > 0) addFloatingText(gridX * BLOCK_SIZE + (BLOCK_SIZE/2), gridY * BLOCK_SIZE, `+${amount}`, '#4ade80');
         }
 
         function showEventBanner(text, styleClass, duration) {
-            eventBanner.innerText = text;
-            eventBanner.className = `small-arcade text-[11px] px-3 py-2 rounded-full border ${styleClass}`;
-            eventBanner.classList.remove('hidden');
-            eventBannerTimer = duration;
+            eventBanner.innerText = text; eventBanner.className = `small-arcade text-[11px] px-3 py-2 rounded-full border ${styleClass}`;
+            eventBanner.classList.remove('hidden'); eventBannerTimer = duration;
         }
 
         function showMegaBonus(amount) {
             if (!megaBonusOverlay || !megaBonusScore) return;
             megaBonusScore.innerText = `+${Math.floor(amount)} BONUS`;
-            megaBonusOverlay.classList.remove('hidden');
-            megaBonusTimer = 1800;
+            megaBonusOverlay.classList.remove('hidden'); megaBonusTimer = 1800;
         }
 
         function updateMegaBonusOverlay(deltaTime) {
@@ -606,11 +570,7 @@
             const progress = Math.max(0, megaBonusTimer / 1800);
             megaBonusOverlay.style.opacity = String(progress);
             megaBonusOverlay.style.transform = `translateY(${(1 - progress) * -18}px) scale(${0.9 + progress * 0.18})`;
-            if (megaBonusTimer <= 0) {
-                megaBonusOverlay.classList.add('hidden');
-                megaBonusOverlay.style.opacity = '1';
-                megaBonusOverlay.style.transform = 'translateY(0px) scale(1)';
-            }
+            if (megaBonusTimer <= 0) { megaBonusOverlay.classList.add('hidden'); megaBonusOverlay.style.opacity = '1'; megaBonusOverlay.style.transform = 'translateY(0px) scale(1)'; }
         }
 
         function increaseDanger(amount = 1) { dangerCount += amount; refreshHud(); updateBgm(); }
@@ -622,19 +582,50 @@
             feverDisplay.innerText = feverTimer > 0 ? `${(feverTimer / 1000).toFixed(1)}s` : 'READY';
             feverComboDisplay.innerText = feverTimer > 0 ? 'ACTIVE / DILATION' : `CHAIN ${justDisarmChain}/2`;
             feverBar.style.width = feverTimer > 0 ? `${Math.round(feverTimer / 12000 * 100)}%` : `${Math.round(justDisarmChain / 2 * 100)}%`;
-            
             if (holdStatusEl) {
-                if (canHold) {
-                    holdStatusEl.innerText = 'READY';
-                    holdStatusEl.className = 'mt-1 text-[9px] text-cyan-400 small-arcade transition-colors';
-                } else {
-                    holdStatusEl.innerText = 'LOCKED';
-                    holdStatusEl.className = 'mt-1 text-[9px] text-gray-600 small-arcade transition-colors';
-                }
+                holdStatusEl.innerText = canHold ? 'READY' : 'LOCKED';
+                holdStatusEl.className = canHold ? 'mt-1 text-[9px] text-cyan-400 small-arcade transition-colors' : 'mt-1 text-[9px] text-gray-600 small-arcade transition-colors';
             }
+            dropInterval = getDropIntervalForLevel(); drawHoldAndNext();
+        }
 
-            dropInterval = getDropIntervalForLevel();
-            drawHoldAndNext();
+        // --- Rewind System ---
+        function saveState() {
+            stateHistory.push({
+                board: new Uint32Array(board),
+                score, level, lines, dangerCount, totalExplodedBombs, feverTimer, justDisarmChain, pendingJustDisarms, pendingGarbage, combo,
+                isGameOver, isPlaying, isPaused, currentPhase, dropTimer, lockTimer,
+                nextPieceKey, nextPieceBomb, holdPieceKey, canHold, eventBannerTimer,
+                currentPiece: currentPiece ? {
+                    key: currentPiece.key, shape: currentPiece.shape.map(row => [...row]), colorIdx: currentPiece.colorIdx,
+                    x: currentPiece.x, y: currentPiece.y, bombPos: currentPiece.bombPos ? { ...currentPiece.bombPos } : null
+                } : null
+            });
+            if (stateHistory.length > HISTORY_MAX_FRAMES) stateHistory.shift();
+        }
+
+        function popAndRestoreState() {
+            if (stateHistory.length === 0) return false;
+            const st = stateHistory.pop();
+            board.set(st.board);
+            score = st.score; level = st.level; lines = st.lines; dangerCount = st.dangerCount; totalExplodedBombs = st.totalExplodedBombs;
+            feverTimer = st.feverTimer; justDisarmChain = st.justDisarmChain; pendingJustDisarms = st.pendingJustDisarms; pendingGarbage = st.pendingGarbage; combo = st.combo;
+            
+            const wasGameOver = isGameOver;
+            isGameOver = st.isGameOver; isPlaying = st.isPlaying; isPaused = st.isPaused; currentPhase = st.currentPhase;
+            dropTimer = st.dropTimer; lockTimer = st.lockTimer;
+            nextPieceKey = st.nextPieceKey; nextPieceBomb = st.nextPieceBomb; holdPieceKey = st.holdPieceKey; canHold = st.canHold;
+            eventBannerTimer = st.eventBannerTimer;
+            currentPiece = st.currentPiece;
+            
+            if (wasGameOver && !isGameOver) {
+                document.getElementById('gameOverOverlay').classList.add('hidden');
+                isPlaying = true;
+            }
+            
+            floatingTexts = []; hardDropTrail = null; clearParticles();
+            refreshHud();
+            return true;
         }
 
         // ==========================================
@@ -676,11 +667,8 @@
                 }
             }
             currentPiece = null; lockTimer = 0; dropTimer = 0; canHold = true;
-            refreshHud(); // Refresh to update hold status
-            if (!checkLines()) {
-                combo = 0; // Break combo
-                startGarbagePhaseOrSpawn();
-            }
+            refreshHud();
+            if (!checkLines()) { combo = 0; startGarbagePhaseOrSpawn(); }
         }
 
         function checkLines() {
@@ -694,19 +682,14 @@
                         const val = board[r * COLS + c];
                         if (val !== 0) {
                             const b = unpackBlock(val);
-                            if (b.isBomb && b.timeLeft <= 1200) {
-                                pendingJustDisarms++;
-                                if (b.timeLeft <= 1000) pendingMegaClear = true;
-                            }
+                            if (b.isBomb && b.timeLeft <= 1200) { pendingJustDisarms++; if (b.timeLeft <= 1000) pendingMegaClear = true; }
                             board[r * COLS + c] = packBlock(b.colorIdx, b.isBomb, b.timeLeft, true, b.yOffset);
                         }
                     }
                 }
             }
-
             if (linesToClear.length > 0) {
-                clearAnimTimer = 320; currentPhase = PHASES.CLEARING;
-                se.clear();
+                clearAnimTimer = 320; currentPhase = PHASES.CLEARING; se.clear();
                 linesToClear.forEach(r => {
                     for (let c = 0; c < COLS; c++) {
                         const b = unpackBlock(board[r * COLS + c]);
@@ -720,32 +703,18 @@
 
         function triggerMegaClear() {
             const occupiedCells = [];
-            for (let i = 0; i < ROWS * COLS; i++) {
-                if (board[i] !== 0) {
-                    const b = unpackBlock(board[i]);
-                    occupiedCells.push({ idx: i, colorIdx: b.colorIdx });
-                }
-            }
-
-            const clearedCount = occupiedCells.length;
-            if (clearedCount <= 0) { pendingMegaClear = false; return; }
-
+            for (let i = 0; i < ROWS * COLS; i++) { if (board[i] !== 0) occupiedCells.push({ idx: i, colorIdx: unpackBlock(board[i]).colorIdx }); }
+            if (occupiedCells.length <= 0) { pendingMegaClear = false; return; }
             clearParticles();
-            const sampleStep = Math.max(1, Math.ceil(clearedCount / 12));
+            const sampleStep = Math.max(1, Math.ceil(occupiedCells.length / 12));
             for (let i = 0; i < occupiedCells.length; i += sampleStep) {
-                const cell = occupiedCells[i];
-                createParticles((cell.idx % COLS) * BLOCK_SIZE + 15, Math.floor(cell.idx / COLS) * BLOCK_SIZE + 15, cell.colorIdx, 1);
+                createParticles((occupiedCells[i].idx % COLS) * BLOCK_SIZE + 15, Math.floor(occupiedCells[i].idx / COLS) * BLOCK_SIZE + 15, occupiedCells[i].colorIdx, 1);
             }
-
             for (const cell of occupiedCells) board[cell.idx] = 0;
-
             explosionFlash = Math.max(explosionFlash, 0.35); shakeTimer = Math.max(shakeTimer, 120);
-            addScore(clearedCount * 50); 
-            addScore(5000); 
-            showMegaBonus(5000);
+            addScore(occupiedCells.length * 50); addScore(5000); showMegaBonus(5000);
             showEventBanner('MEGA DISARM! ALL CLEAR!', 'border-yellow-400/70 bg-yellow-950/70 text-yellow-200', 1400);
-            se.clear();
-            pendingMegaClear = false;
+            se.clear(); pendingMegaClear = false;
         }
 
         function processLineClearEnd() {
@@ -770,40 +739,28 @@
                     }
                 }
             }
-
-            lines += clearedRows.length;
-            combo++;
-            
-            const comboBonus = (combo - 1) * 50;
-            const baseScore = clearedRows.length * 100 * (feverTimer > 0 ? 2 : 1);
+            lines += clearedRows.length; combo++;
+            const comboBonus = (combo - 1) * 50, baseScore = clearedRows.length * 100 * (feverTimer > 0 ? 2 : 1);
             addScore(baseScore + comboBonus, true, currentPiece ? currentPiece.x + 1 : COLS/2, clearedRows[0]);
-            
-            if (combo > 1) {
-                showEventBanner(`${combo} COMBO! +${comboBonus}`, 'border-cyan-400/70 bg-cyan-950/70 text-cyan-200', 1000);
-            }
-
+            if (combo > 1) showEventBanner(`${combo} COMBO! +${comboBonus}`, 'border-cyan-400/70 bg-cyan-950/70 text-cyan-200', 1000);
             if (pendingJustDisarms > 0) {
                 addScore(pendingJustDisarms * 900, true, COLS/2, clearedRows[0] - 2);
                 justDisarmChain += pendingJustDisarms;
                 if (justDisarmChain >= 2) activateFever();
             }
             if (pendingMegaClear) triggerMegaClear();
-            
             linesToClear = []; clearAnimTimer = 0; clearParticles();
-            level = Math.floor(lines / 5) + 1;
-            refreshHud(); startGarbagePhaseOrSpawn();
+            level = Math.floor(lines / 5) + 1; refreshHud(); startGarbagePhaseOrSpawn();
         }
 
         function activateFever() {
             feverTimer = 12000; justDisarmChain = 0;
             showEventBanner('TIME DILATION x2!', 'border-fuchsia-500/70 bg-fuchsia-950/75 text-fuchsia-200', 2200);
-            refreshHud(); // Also updates dropInterval via refresh
-            updateBgm();
+            refreshHud(); updateBgm();
         }
 
         function updateBombs(deltaTime) {
-            const cellsToClear = new Set();
-            let didExplode = false, explodedBombs = 0;
+            const cellsToClear = new Set(); let didExplode = false, explodedBombs = 0;
             for (let i = 0; i < ROWS * COLS; i++) {
                 const val = board[i];
                 if (val !== 0) {
@@ -820,20 +777,12 @@
                     }
                 }
             }
-
             if (!didExplode) return;
-
             explosionFlash = 0.8; shakeTimer = 500; se.explode();
-            totalExplodedBombs += explodedBombs;
-            combo = 0; // Explosion breaks combo
-            increaseDanger(explodedBombs);
-            pendingGarbage += 2 + getDangerStage();
-
+            totalExplodedBombs += explodedBombs; combo = 0;
+            increaseDanger(explodedBombs); pendingGarbage += 2 + getDangerStage();
             cellsToClear.forEach(idx => {
-                if (board[idx] !== 0) {
-                    createParticles((idx%COLS)*BLOCK_SIZE+15, Math.floor(idx/COLS)*BLOCK_SIZE+15, unpackBlock(board[idx]).colorIdx, 6);
-                    board[idx] = 0;
-                }
+                if (board[idx] !== 0) { createParticles((idx%COLS)*BLOCK_SIZE+15, Math.floor(idx/COLS)*BLOCK_SIZE+15, unpackBlock(board[idx]).colorIdx, 6); board[idx] = 0; }
             });
             showEventBanner(`FATIGUE LIMIT REACHED! +${pendingGarbage} NOISE`, 'border-red-500/70 bg-red-950/75 text-red-200', 1650);
             collapseBoardColumns();
@@ -847,9 +796,7 @@
                     const val = board[readRow * COLS + c];
                     if (val !== 0) {
                         if (writeRow !== readRow) {
-                            let b = unpackBlock(val);
-                            board[writeRow * COLS + c] = packBlock(b.colorIdx, b.isBomb, b.timeLeft, b.isClearing, (readRow - writeRow) * BLOCK_SIZE);
-                            board[readRow * COLS + c] = 0;
+                            let b = unpackBlock(val); board[writeRow * COLS + c] = packBlock(b.colorIdx, b.isBomb, b.timeLeft, b.isClearing, (readRow - writeRow) * BLOCK_SIZE); board[readRow * COLS + c] = 0;
                         }
                         writeRow--;
                     }
@@ -863,11 +810,10 @@
             for (let r = 0; r < ROWS - 1; r++) { for (let c = 0; c < COLS; c++) board[r * COLS + c] = board[(r + 1) * COLS + c]; }
             const gapCol = Math.floor(harvestEntropy() * COLS);
             for (let c = 0; c < COLS; c++) {
-                const randomColorIdx = Math.floor(harvestEntropy() * 7) + 1; // 1-7 random colors
+                const randomColorIdx = Math.floor(harvestEntropy() * 7) + 1;
                 board[(ROWS - 1) * COLS + c] = c === gapCol ? 0 : packBlock(randomColorIdx, false, 0, false, 0);
             }
-            pendingGarbage -= COLS - 1;
-            refreshHud(); return true;
+            pendingGarbage -= COLS - 1; refreshHud(); return true;
         }
 
         function startGarbagePhaseOrSpawn() {
@@ -879,12 +825,8 @@
             const key = fromHold ? heldKeyOverride : nextPieceKey;
             const bombFlag = fromHold ? false : nextPieceBomb;
             currentPiece = makePieceFromKey(key, bombFlag);
-            
             if (checkCollision(currentPiece.x, currentPiece.y, currentPiece.shape)) { triggerGameOver('Zero-Lock Initial Collision'); return; }
-            if (!fromHold) {
-                nextPieceKey = KEYS[Math.floor(harvestEntropy() * KEYS.length)];
-                nextPieceBomb = harvestEntropy() < getBombChanceForLevel();
-            }
+            if (!fromHold) { nextPieceKey = KEYS[Math.floor(harvestEntropy() * KEYS.length)]; nextPieceBomb = harvestEntropy() < getBombChanceForLevel(); }
             currentPhase = PHASES.PLAYING; refreshHud();
         }
 
@@ -892,21 +834,37 @@
         // 6. MAIN LOOP & RENDER
         // ==========================================
         function gameLoop(timestamp) {
-            if (!isPlaying) return;
+            if (!isPlaying && !isGameOver) return; // Wait for connect
             let deltaTime = Math.min(100, timestamp - lastTime);
             lastTime = timestamp;
-            if (!isPaused) update(deltaTime);
+            
+            if (isRewinding) {
+                // Rewind 2 states per frame for fast reversal
+                let r1 = popAndRestoreState();
+                let r2 = popAndRestoreState();
+                if (r1 || r2) {
+                    se.rewind();
+                    updateBgm(); // Sync BGM with restored state
+                } else {
+                    isRewinding = false; // End of history
+                }
+                draw();
+                requestAnimationFrame(gameLoop);
+                return;
+            }
+            
+            if (!isPaused) {
+                if (!isGameOver) saveState();
+                update(deltaTime);
+            }
             draw();
             requestAnimationFrame(gameLoop);
         }
 
         function update(deltaTime) {
             if (isGameOver) return;
-            updateParticlesUCDF(deltaTime); 
-            updateBoardYOffset(deltaTime); 
-            updateMegaBonusOverlay(deltaTime);
-            updateFloatingTexts(deltaTime);
-            updateTrail(deltaTime);
+            updateParticlesUCDF(deltaTime); updateBoardYOffset(deltaTime); updateMegaBonusOverlay(deltaTime);
+            updateFloatingTexts(deltaTime); updateTrail(deltaTime);
             
             if (shakeTimer > 0) shakeTimer -= deltaTime;
             if (eventBannerTimer > 0) {
@@ -927,21 +885,15 @@
             updateBombs(deltaTime);
             if (isGameOver || !currentPiece) return;
 
-            // Fast drop if soft dropping
-            if (isSoftDropping && currentPhase === PHASES.PLAYING) {
-                dropTimer += deltaTime * 20;
-            } else {
-                dropTimer += deltaTime;
-            }
+            if (isSoftDropping && currentPhase === PHASES.PLAYING) dropTimer += deltaTime * 20;
+            else dropTimer += deltaTime;
 
             if (dropTimer >= dropInterval) {
                 if (!checkCollision(currentPiece.x, currentPiece.y + 1, currentPiece.shape)) { 
                     currentPiece.y++; 
                     if (isSoftDropping) addScore(1, false);
                     dropTimer = 0; lockTimer = 0; 
-                } else {
-                    dropTimer = 0;
-                }
+                } else dropTimer = 0;
             }
 
             if (checkCollision(currentPiece.x, currentPiece.y + 1, currentPiece.shape)) {
@@ -954,7 +906,11 @@
             ctx.fillStyle = '#0a0a0a'; ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.save();
             
-            if (isGameOver) {
+            // Visual Filters
+            if (isRewinding) {
+                ctx.filter = `hue-rotate(${Math.floor(harvestEntropy() * 360)}deg) invert(80%) sepia(40%)`;
+                ctx.globalAlpha = 0.8 + harvestEntropy() * 0.2;
+            } else if (isGameOver) {
                 ctx.filter = 'grayscale(100%) contrast(120%) brightness(40%)';
             }
             
@@ -978,17 +934,14 @@
             }
 
             // Draw Trail
-            if (hardDropTrail && hardDropTrail.life > 0) {
+            if (hardDropTrail && hardDropTrail.life > 0 && !isRewinding) {
                 ctx.globalAlpha = hardDropTrail.life * 0.4;
                 for (let c = 0; c < hardDropTrail.width; c++) {
                     let hasBlock = false;
-                    for (let r = 0; r < currentPiece?.shape.length; r++) {
-                        if (currentPiece?.shape[r][c]) hasBlock = true;
-                    }
+                    for (let r = 0; r < currentPiece?.shape.length; r++) { if (currentPiece?.shape[r][c]) hasBlock = true; }
                     if (hasBlock) {
                         let gradient = ctx.createLinearGradient(0, hardDropTrail.startY * BLOCK_SIZE, 0, hardDropTrail.endY * BLOCK_SIZE);
-                        gradient.addColorStop(0, 'transparent');
-                        gradient.addColorStop(1, hardDropTrail.color);
+                        gradient.addColorStop(0, 'transparent'); gradient.addColorStop(1, hardDropTrail.color);
                         ctx.fillStyle = gradient;
                         ctx.fillRect((hardDropTrail.x + c) * BLOCK_SIZE, hardDropTrail.startY * BLOCK_SIZE, BLOCK_SIZE, (hardDropTrail.endY - hardDropTrail.startY) * BLOCK_SIZE);
                     }
@@ -996,55 +949,51 @@
                 ctx.globalAlpha = 1.0;
             }
 
-            if (currentPiece) {
+            if (currentPiece && !isGameOver) {
                 let ghostY = currentPiece.y;
                 while (!checkCollision(currentPiece.x, ghostY + 1, currentPiece.shape)) ghostY++;
-                drawPiece(currentPiece.x, ghostY, currentPiece.shape, COLOR_PALETTE[currentPiece.colorIdx], false, null, 0.15); // Draw ghost with low alpha
+                drawPiece(currentPiece.x, ghostY, currentPiece.shape, COLOR_PALETTE[currentPiece.colorIdx], false, null, 0.15); // Ghost
                 drawPiece(currentPiece.x, currentPiece.y, currentPiece.shape, COLOR_PALETTE[currentPiece.colorIdx], false, currentPiece.bombPos, 1.0);
             }
 
             drawParticlesUCDF(ctx);
 
-            if (feverTimer > 0) {
+            if (feverTimer > 0 && !isRewinding) {
                 ctx.fillStyle = `rgba(180, 50, 255, ${0.08 + 0.05 * Math.sin(Date.now() / 120)})`;
                 ctx.fillRect(-10, -10, canvas.width + 20, canvas.height + 20);
             }
 
-            if (explosionFlash > 0) {
+            if (explosionFlash > 0 && !isRewinding) {
                 ctx.fillStyle = `rgba(255, 50, 50, ${explosionFlash})`; ctx.fillRect(-10, -10, canvas.width+20, canvas.height+20);
                 explosionFlash = Math.max(0, explosionFlash - 0.03);
             }
             
-            drawFloatingTexts(ctx);
+            // Rewind Glitch Effect
+            if (isRewinding) {
+                ctx.fillStyle = `rgba(255, 255, 255, ${harvestEntropy() * 0.1})`;
+                ctx.fillRect(0, harvestEntropy() * canvas.height, canvas.width, harvestEntropy() * 30);
+                ctx.fillStyle = 'white'; ctx.font = '24px "Press Start 2P"'; ctx.textAlign = 'center';
+                ctx.fillText('<< E-REV', canvas.width/2, canvas.height/2);
+            }
             
+            drawFloatingTexts(ctx);
             ctx.restore();
         }
 
         function drawBlock(x, y, color, isBomb, timeLeft, isClearing, yOffset, alpha=1.0) {
             let px = x * BLOCK_SIZE; let py = y * BLOCK_SIZE + (yOffset || 0);
             ctx.globalAlpha = 1.0;
-            
-            // Render Ghost outline only if alpha is low
             if (alpha < 1.0) {
-                ctx.fillStyle = color;
-                ctx.globalAlpha = 0.15;
-                ctx.fillRect(px, py, BLOCK_SIZE, BLOCK_SIZE);
-                ctx.globalAlpha = 0.5;
-                ctx.strokeStyle = color;
-                ctx.lineWidth = 2;
-                ctx.strokeRect(px + 1, py + 1, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
-                ctx.globalAlpha = 1.0;
-                return;
+                ctx.fillStyle = color; ctx.globalAlpha = 0.15; ctx.fillRect(px, py, BLOCK_SIZE, BLOCK_SIZE);
+                ctx.globalAlpha = 0.5; ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.strokeRect(px + 1, py + 1, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
+                ctx.globalAlpha = 1.0; return;
             }
 
-            if (isClearing) {
-                ctx.fillStyle = `rgba(255, 255, 255, ${((Math.sin(Date.now() / 30) + 1) / 2) + 0.5})`;
-            } else if (isBomb && timeLeft !== null && timeLeft < 5000) {
+            if (isClearing) { ctx.fillStyle = `rgba(255, 255, 255, ${((Math.sin(Date.now() / 30) + 1) / 2) + 0.5})`; }
+            else if (isBomb && timeLeft !== null && timeLeft < 5000) {
                 px += (harvestEntropy() - 0.5) * 4; py += (harvestEntropy() - 0.5) * 4;
                 ctx.fillStyle = `rgba(255, 100, 100, ${((Math.sin(Date.now() / 50) + 1) / 2) + 0.5})`;
-            } else {
-                ctx.fillStyle = color;
-            }
+            } else { ctx.fillStyle = color; }
 
             ctx.fillRect(px, py, BLOCK_SIZE, BLOCK_SIZE);
             ctx.fillStyle = 'rgba(255,255,255,0.28)'; ctx.fillRect(px, py, BLOCK_SIZE, 4); ctx.fillRect(px, py, 4, BLOCK_SIZE);
@@ -1097,8 +1046,8 @@
         }
 
         function triggerGameOver(reason) {
-            isGameOver = true; isPlaying = false; currentPhase = PHASES.GAME_OVER;
-            isSoftDropping = false;
+            if (isGameOver) return;
+            isGameOver = true; isPlaying = false; currentPhase = PHASES.GAME_OVER; isSoftDropping = false;
             se.gameOver(); updateBgm();
             document.getElementById('gameOverReason').innerText = reason;
             document.getElementById('finalScore').innerText = score;
@@ -1108,8 +1057,8 @@
         function startGame() {
             ensureAudio(); initBoard();
             score = 0; level = 1; lines = 0; dangerCount = 0; totalExplodedBombs = 0; feverTimer = 0; justDisarmChain = 0; pendingGarbage = 0; combo = 0;
-            isGameOver = false; isPlaying = true; isPaused = false; isSoftDropping = false; currentPhase = PHASES.PLAYING;
-            pendingMegaClear = false; megaBonusTimer = 0; floatingTexts = []; hardDropTrail = null;
+            isGameOver = false; isPlaying = true; isPaused = false; isSoftDropping = false; isRewinding = false; currentPhase = PHASES.PLAYING;
+            pendingMegaClear = false; megaBonusTimer = 0; floatingTexts = []; hardDropTrail = null; stateHistory = [];
             if (megaBonusOverlay) megaBonusOverlay.classList.add('hidden');
             nextPieceKey = KEYS[Math.floor(harvestEntropy() * KEYS.length)];
             nextPieceBomb = harvestEntropy() < getBombChanceForLevel();
@@ -1134,7 +1083,7 @@
         }
 
         function holdPiece() {
-            if (!isPlaying || isGameOver || isPaused || !canHold || !currentPiece) return;
+            if (!isPlaying || isGameOver || isPaused || isRewinding || !canHold || !currentPiece) return;
             se.hold();
             if (holdPieceKey === null) { holdPieceKey = currentPiece.key; spawnPiece(); } 
             else { const temp = holdPieceKey; holdPieceKey = currentPiece.key; spawnPiece(true, temp); }
@@ -1142,27 +1091,21 @@
         }
 
         function doHardDrop() {
-            if (!isPlaying || isGameOver || isPaused || !currentPiece) return;
-            let dropped = false;
-            let dropDist = 0;
-            const startY = currentPiece.y;
+            if (!isPlaying || isGameOver || isPaused || isRewinding || !currentPiece) return;
+            let dropped = false; let dropDist = 0; const startY = currentPiece.y;
             while(!checkCollision(currentPiece.x, currentPiece.y+1, currentPiece.shape)) { currentPiece.y++; dropDist++; dropped = true; }
             if (dropped) {
                 addScore(dropDist * 2, true, currentPiece.x + 1, currentPiece.y);
                 createParticles(currentPiece.x * BLOCK_SIZE + (currentPiece.shape[0].length * BLOCK_SIZE)/2, currentPiece.y * BLOCK_SIZE + BLOCK_SIZE, currentPiece.colorIdx, 5);
-                shakeTimer = Math.max(shakeTimer, 120); // Add impact shake
-                hardDropTrail = {
-                    x: currentPiece.x, startY: startY, endY: currentPiece.y,
-                    width: currentPiece.shape[0].length, color: COLOR_PALETTE[currentPiece.colorIdx], life: 1.0
-                };
+                shakeTimer = Math.max(shakeTimer, 120);
+                hardDropTrail = { x: currentPiece.x, startY: startY, endY: currentPiece.y, width: currentPiece.shape[0].length, color: COLOR_PALETTE[currentPiece.colorIdx], life: 1.0 };
                 se.hardDrop();
             }
             dropTimer = 0; lockTimer = 0; isSoftDropping = false; finalizeLock(currentPiece);
         }
 
         function beginKeybindCapture(action) {
-            isCapturingKey = action;
-            updateSettingsUi();
+            isCapturingKey = action; updateSettingsUi();
             document.getElementById('keybindHint').innerHTML = `<span class="text-cyan-300">【${action.toUpperCase()}】</span>のキーを押してください...`;
         }
 
@@ -1176,8 +1119,12 @@
                 return;
             }
 
-            if (!isPlaying || isGameOver || !currentPiece) {
-                if (e.code === settings.keybinds.pause && isPlaying && !isGameOver) {
+            if (e.code === settings.keybinds.rewind && (isPlaying || isGameOver)) {
+                isRewinding = true; e.preventDefault(); return;
+            }
+
+            if (!isPlaying || isGameOver || !currentPiece || isRewinding) {
+                if (e.code === settings.keybinds.pause && isPlaying && !isGameOver && !isRewinding) {
                     isPaused = !isPaused;
                     document.getElementById('pauseOverlay').classList.toggle('hidden', !isPaused);
                     document.getElementById('btnPause').innerText = isPaused ? 'RESUME' : 'PAUSE';
@@ -1212,13 +1159,14 @@
 
         document.addEventListener('keyup', (e) => {
             if (e.code === settings.keybinds.down) { isSoftDropping = false; }
+            if (e.code === settings.keybinds.rewind) { isRewinding = false; updateBgm(); }
         });
 
         // --- Touch & Swipe Controls ---
         let initialTouchX = 0, initialTouchY = 0, lastTouchX = 0, lastTouchY = 0, touchMoved = false, touchStartTime = 0;
         canvas.addEventListener('touchstart', (e) => {
             e.preventDefault(); ensureAudio();
-            if (!isPlaying || isGameOver || isPaused || clearAnimTimer > 0) return;
+            if (!isPlaying || isGameOver || isPaused || isRewinding || clearAnimTimer > 0) return;
             if (e.touches.length >= 2) { holdPiece(); touchMoved = true; return; }
             initialTouchX = e.touches[0].clientX; initialTouchY = e.touches[0].clientY;
             lastTouchX = initialTouchX; lastTouchY = initialTouchY;
@@ -1227,7 +1175,7 @@
 
         canvas.addEventListener('touchmove', (e) => {
             e.preventDefault();
-            if (!isPlaying || isGameOver || isPaused || clearAnimTimer > 0 || !currentPiece || e.touches.length >= 2) return;
+            if (!isPlaying || isGameOver || isPaused || isRewinding || clearAnimTimer > 0 || !currentPiece || e.touches.length >= 2) return;
             const currentX = e.touches[0].clientX, currentY = e.touches[0].clientY;
             const dx = currentX - lastTouchX, dy = currentY - lastTouchY;
             const thresholdX = settings.swipeSensitivity, thresholdY = settings.swipeSensitivity + 4;
@@ -1238,21 +1186,16 @@
                 lastTouchX = currentX; touchMoved = true;
             }
             if (dy > thresholdY) {
-                isSoftDropping = true; // Hold soft drop during swipe down
-                lastTouchY = currentY; touchMoved = true;
+                isSoftDropping = true; lastTouchY = currentY; touchMoved = true;
             }
             if (dy < -thresholdY) { lastTouchY = currentY; touchMoved = true; }
         }, { passive: false });
 
         canvas.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            isSoftDropping = false; // Reset soft drop on release
-            if (!isPlaying || isGameOver || isPaused || clearAnimTimer > 0 || !currentPiece) return;
-            const dt = Date.now() - touchStartTime;
-            const dx = lastTouchX - initialTouchX, dy = lastTouchY - initialTouchY;
-            
+            e.preventDefault(); isSoftDropping = false;
+            if (!isPlaying || isGameOver || isPaused || isRewinding || clearAnimTimer > 0 || !currentPiece) return;
+            const dt = Date.now() - touchStartTime, dx = lastTouchX - initialTouchX, dy = lastTouchY - initialTouchY;
             if (dy < -40 && Math.abs(dy) > Math.abs(dx) && dt < 400) { doHardDrop(); return; }
-            
             if (!touchMoved || (Math.abs(dx) < 10 && Math.abs(dy) < 10)) {
                 const rot = rotateMatrix(currentPiece.shape);
                 for(let off of [0,-1,1,-2,2]) {
@@ -1266,18 +1209,15 @@
         }, { passive: false });
 
         // --- UI Buttons & Setting Events ---
-        document.getElementById('btnLeft').addEventListener('pointerdown', (e) => { e.preventDefault(); ensureAudio(); if (isPlaying && !isGameOver && !isPaused && currentPiece && !checkCollision(currentPiece.x-1, currentPiece.y, currentPiece.shape)) { currentPiece.x--; se.move(); } });
-        document.getElementById('btnRight').addEventListener('pointerdown', (e) => { e.preventDefault(); ensureAudio(); if (isPlaying && !isGameOver && !isPaused && currentPiece && !checkCollision(currentPiece.x+1, currentPiece.y, currentPiece.shape)) { currentPiece.x++; se.move(); } });
-        
-        // Soft drop button mapping (Press and hold)
-        document.getElementById('btnDown').addEventListener('pointerdown', (e) => { e.preventDefault(); ensureAudio(); isSoftDropping = true; });
+        document.getElementById('btnLeft').addEventListener('pointerdown', (e) => { e.preventDefault(); ensureAudio(); if (isPlaying && !isGameOver && !isPaused && !isRewinding && currentPiece && !checkCollision(currentPiece.x-1, currentPiece.y, currentPiece.shape)) { currentPiece.x--; se.move(); } });
+        document.getElementById('btnRight').addEventListener('pointerdown', (e) => { e.preventDefault(); ensureAudio(); if (isPlaying && !isGameOver && !isPaused && !isRewinding && currentPiece && !checkCollision(currentPiece.x+1, currentPiece.y, currentPiece.shape)) { currentPiece.x++; se.move(); } });
+        document.getElementById('btnDown').addEventListener('pointerdown', (e) => { e.preventDefault(); ensureAudio(); if(!isRewinding) isSoftDropping = true; });
         document.getElementById('btnDown').addEventListener('pointerup', (e) => { e.preventDefault(); isSoftDropping = false; });
         document.getElementById('btnDown').addEventListener('pointerleave', (e) => { e.preventDefault(); isSoftDropping = false; });
-        
         document.getElementById('btnDrop').addEventListener('pointerdown', (e) => { e.preventDefault(); ensureAudio(); doHardDrop(); });
         document.getElementById('btnRotate').addEventListener('pointerdown', (e) => {
             e.preventDefault(); ensureAudio();
-            if (!isPlaying || isGameOver || isPaused || !currentPiece) return;
+            if (!isPlaying || isGameOver || isPaused || isRewinding || !currentPiece) return;
             const rot = rotateMatrix(currentPiece.shape);
             for(let off of [0,-1,1,-2,2]) {
                 if(!checkCollision(currentPiece.x+off, currentPiece.y, rot)) {
@@ -1289,10 +1229,16 @@
         });
         document.getElementById('btnHold').addEventListener('pointerdown', (e) => { e.preventDefault(); ensureAudio(); holdPiece(); });
         document.getElementById('holdCanvas').addEventListener('click', () => { ensureAudio(); holdPiece(); });
+        
+        // Mobile Rewind Button
+        const btnRewind = document.getElementById('btnRewind');
+        btnRewind.addEventListener('pointerdown', (e) => { e.preventDefault(); ensureAudio(); if(isPlaying || isGameOver) isRewinding = true; });
+        btnRewind.addEventListener('pointerup', (e) => { e.preventDefault(); isRewinding = false; updateBgm(); });
+        btnRewind.addEventListener('pointerleave', (e) => { e.preventDefault(); isRewinding = false; updateBgm(); });
 
         document.getElementById('btnPause').addEventListener('click', () => {
             ensureAudio();
-            if (currentPhase === PHASES.READY || isGameOver) return;
+            if (currentPhase === PHASES.READY || isGameOver || isRewinding) return;
             isPaused = !isPaused;
             document.getElementById('pauseOverlay').classList.toggle('hidden', !isPaused);
             document.getElementById('btnPause').innerText = isPaused ? 'RESUME' : 'PAUSE';
@@ -1300,12 +1246,10 @@
             updateBgm();
         });
         document.getElementById('btnResume').addEventListener('click', () => {
-            ensureAudio();
-            isPaused = false;
+            ensureAudio(); isPaused = false;
             document.getElementById('pauseOverlay').classList.add('hidden');
             document.getElementById('btnPause').innerText = 'PAUSE';
-            lastTime = performance.now();
-            updateBgm();
+            lastTime = performance.now(); updateBgm();
         });
 
         document.getElementById('btnStart').addEventListener('click', startGame);
@@ -1314,20 +1258,13 @@
         // Settings Modal Events
         document.getElementById('btnSettings').addEventListener('click', () => {
             if (isPlaying && !isGameOver && !isPaused) {
-                isPaused = true;
-                document.getElementById('btnPause').innerText = 'RESUME';
-                updateBgm();
+                isPaused = true; document.getElementById('btnPause').innerText = 'RESUME'; updateBgm();
             }
-            document.getElementById('settingsModal').classList.remove('hidden');
-            document.getElementById('settingsModal').style.display = 'flex';
-            updateSettingsUi();
+            document.getElementById('settingsModal').classList.remove('hidden'); document.getElementById('settingsModal').style.display = 'flex'; updateSettingsUi();
         });
         document.getElementById('btnCloseSettings').addEventListener('click', () => {
-            document.getElementById('settingsModal').classList.add('hidden');
-            document.getElementById('settingsModal').style.display = '';
-            if (isPlaying && !isGameOver && isPaused) {
-                document.getElementById('pauseOverlay').classList.remove('hidden');
-            }
+            document.getElementById('settingsModal').classList.add('hidden'); document.getElementById('settingsModal').style.display = '';
+            if (isPlaying && !isGameOver && isPaused) { document.getElementById('pauseOverlay').classList.remove('hidden'); }
             isCapturingKey = null;
         });
 
@@ -1341,15 +1278,13 @@
 
         document.querySelectorAll('.keybind-btn').forEach(btn => { btn.addEventListener('click', () => beginKeybindCapture(btn.dataset.keybindAction)); });
         document.getElementById('btnResetKeybinds').addEventListener('click', () => {
-            settings.keybinds = { ...DEFAULT_SETTINGS.keybinds };
-            isCapturingKey = null;
+            settings.keybinds = { ...DEFAULT_SETTINGS.keybinds }; isCapturingKey = null;
             document.getElementById('keybindHint').innerText = "ボタンを押して次のキーを割り当て";
             saveData(); updateSettingsUi();
         });
 
         // Init
-        loadData();
-        initBoard(); drawHoldAndNext(); draw();
+        loadData(); initBoard(); drawHoldAndNext(); draw();
     </script>
 </body>
 </html>

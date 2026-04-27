@@ -11,8 +11,8 @@ This simulation is engineered with extreme performance constraints in mind, util
 
 * **Bit-Packed SoA (Structure of Arrays):** The entire game board is managed within a single `Uint32Array`. Every block's state—color, explosive fuse, clearing flags, and spatial offsets—is packed into a 32-bit integer to ensure zero-allocation during the core logic loop.
 * **Deterministic Fixed-Point Arithmetic:** All physics and particle cloud dynamics utilize 16.16 fixed-point math, eliminating floating-point non-determinism across different hardware architectures.
-* **Entropy Harvesting:** Device noise and user input are dynamic-normalized and internalized as system entropy (E2/E3), directly influencing bomb spawn rates and fatigue levels.
-* **Local Time Dilation:** Resource allocation is dynamically adjusted via the **FEVER System**, inducing a temporal slowdown that allows for higher-precision maneuvers under high fatigue (DANGER) states.
+* **Entropy Harvesting:** Device noise and user input are dynamically normalized and internalized as system entropy (E2/E3), directly influencing bomb spawn rates and fatigue levels.
+* **Entropy Reversal (E-REV):** A GPU-inspired ring buffer maintains a history of the last 300 frames. This allows users to rewind causality up to 5 seconds, even after a system collapse (Game Over).
 
 ---
 
@@ -24,7 +24,7 @@ Select tetrominos spawn with live explosives. These entities have a fixed half-l
 ### ■ VIF Dynamics (Velocity / Intensity / Fatigue)
 * **Velocity:** Base drop speed increases as the level scales.
 * **Intensity:** Scoring and visual feedback scale with your current **COMBO (REN)** chain.
-* **Fatigue (DANGER):** Failed disarms and explosions accumulate fatigue. High fatigue leads to **ZERO-LOCK** (System Collapse / Game Over).
+* **Fatigue (DANGER):** Failed disarms and explosions accumulate fatigue. High fatigue lead to **ZERO-LOCK** (System Collapse / Game Over).
 
 ### ■ Mega Disarm / Total Evacuation
 Clearing a bomb at its critical limit (1 second or less) triggers a **Mega Disarm**, performing a total evacuation of all active entities on the board for a massive score bonus.
@@ -41,25 +41,27 @@ Clearing a bomb at its critical limit (1 second or less) triggers a **Mega Disar
 | Soft Drop | `↓` (Hold for Fast Drop) |
 | Hard Drop | `Space` (with Kinetic Impact) |
 | Hold Piece | `Shift` |
+| **Entropy Reversal** | **`Z` (Hold to Rewind)** |
 | Suspend/Pause | `P` |
 | Configure Params | `O` |
 
 ### Mobile / Touch Interface
 * **Tap:** Rotate Entity
 * **Swipe Horizontal:** Translate Entity
-* **Swipe Down:** Initiate Soft Drop
+* **Swipe Down:** Initiate Soft Drop (Continuous)
 * **Flick Up:** Trigger Hard Drop
 * **Two-Finger Tap:** Hold Entity
+* **E-REV Button:** Reverse Entropy
 
 ---
 
 ## 🛠 Environmental Parameters
-The simulation parameters—including **SE Volume**, **Drone Synth BGM**, **Lock Delay**, and **Difficulty (VIF Scaling)**—can be adjusted in the `UCD-F PARAMS` console. All configurations and high-entropy states are persisted via local storage.
+Adjust simulation parameters—including **SE Volume**, **Drone Synth BGM**, **Lock Delay**, and **Difficulty (VIF Scaling)**—via the `UCD-F PARAMS` console. All configurations and high-entropy states are persisted via local storage.
 
 ---
 
 ## 🧬 Development "Vibe"
-Created through high-velocity **Vibe Coding**. Powered by the Gemini Canvas & HTML5 Canvas API. Designed for high-stakes, high-octane cognitive engagement.
+Created through high-velocity **Vibe Coding**. Powered by the Gemini Canvas & HTML5 Canvas API. Designed for high-stakes cognitive engagement.
 
 **INITIATE UCD-F SYSTEM?**
 [ CONNECT ]
